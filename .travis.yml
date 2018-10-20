@@ -1,0 +1,10 @@
+language: go
+sudo: required
+go_import_path: github.com/holidays/go-holidays
+
+
+????
+
+
+go:
+  - "1.11"
