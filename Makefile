@@ -4,7 +4,7 @@ test: vet simple staticcheck $(GOPATH)/bin/ginkgo
 	go test ./pkg
 
 integration-test: vet simple staticcheck $(GOPATH)/bin/ginkgo
-	go test ./internal
+	go test -tags=integration ./pkg
 
 vet:
 	@go vet ./pkg

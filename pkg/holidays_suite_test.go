@@ -9,5 +9,5 @@ import (
 
 func TestHolidays(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Main Holidays Suite")
+	RunSpecs(t, "Holidays Suite")
 }

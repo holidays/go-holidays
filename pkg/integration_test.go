@@ -1,3 +1,5 @@
+// +build integration
+
 package holidays_test
 
 import (
@@ -6,16 +8,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	holidays "github.com/holidays/go-holidays/pkg"
+	"github.com/holidays/go-holidays/pkg"
 )
 
-var _ = Describe("Holidays", func() {
+var _ = Describe("Integration Test - Between", func() {
 	var (
 		err     error
 		regions []string
 		options holidays.Options
-
-		result []holidays.Holiday
 	)
 
 	BeforeEach(func() {
@@ -30,6 +30,7 @@ var _ = Describe("Holidays", func() {
 	Describe("between", func() {
 		var (
 			start, end time.Time
+			result     []holidays.Holiday
 		)
 
 		BeforeEach(func() {
@@ -57,6 +58,24 @@ var _ = Describe("Holidays", func() {
 				Name:    "Martin Luther King, Jr. Day",
 				Regions: []string{"us"},
 			}))
+		})
+	})
+
+	Describe("available_regions", func() {
+		var (
+			regions []string
+		)
+
+		JustBeforeEach(func() {
+			regions, err = holidays.AvailableRegions()
+		})
+
+		It("Does not return an error", func() {
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Returns the correct number of regions", func() {
+			Expect(len(regions)).To(Equal(240))
 		})
 	})
 })
