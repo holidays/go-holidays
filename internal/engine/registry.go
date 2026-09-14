@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/definition"
 )
 
 // MethodArgs is the uniform invocation payload for every registered method.

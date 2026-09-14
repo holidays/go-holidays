@@ -18,7 +18,7 @@ func EmitTests(rf *RegionFile) ([]byte, error) {
 	fmt.Fprintln(&buf, "import (")
 	fmt.Fprintln(&buf, "\t\"fmt\"")
 	fmt.Fprintln(&buf)
-	fmt.Fprintln(&buf, "\tholidays \"github.com/ppeble/go-holidays\"")
+	fmt.Fprintln(&buf, "\tholidays \"github.com/holidays/go-holidays\"")
 	fmt.Fprintln(&buf)
 	fmt.Fprintln(&buf, "\t. \"github.com/onsi/ginkgo/v2\"")
 	fmt.Fprintln(&buf, "\t. \"github.com/onsi/gomega\"")
@@ -51,7 +51,7 @@ import (
 	"testing"
 	"time"
 
-	holidays "github.com/ppeble/go-holidays"
+	holidays "github.com/holidays/go-holidays"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

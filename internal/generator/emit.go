@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ppeble/go-holidays/internal/definition"
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/engine"
 )
 
 // ValidationError reports method references that have no registered Go implementation.
@@ -52,8 +52,8 @@ func EmitDefinitions(rf *RegionFile) ([]byte, error) {
 	fmt.Fprintln(&buf, "package definitions")
 	fmt.Fprintln(&buf)
 	fmt.Fprintln(&buf, "import (")
-	fmt.Fprintln(&buf, "\t\"github.com/ppeble/go-holidays/internal/definition\"")
-	fmt.Fprintln(&buf, "\t\"github.com/ppeble/go-holidays/internal/engine\"")
+	fmt.Fprintln(&buf, "\t\"github.com/holidays/go-holidays/internal/definition\"")
+	fmt.Fprintln(&buf, "\t\"github.com/holidays/go-holidays/internal/engine\"")
 	fmt.Fprintln(&buf, ")")
 	fmt.Fprintln(&buf)
 	varName := rf.Country + "Rules"

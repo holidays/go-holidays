@@ -3,8 +3,8 @@
 package definitions
 
 import (
-	"github.com/ppeble/go-holidays/internal/definition"
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/engine"
 )
 
 var hrRules = []definition.HolidayRule{

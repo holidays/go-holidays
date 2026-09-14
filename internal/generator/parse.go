@@ -11,7 +11,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/ppeble/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/definition"
 )
 
 // RegionFile is the in-memory result of parsing one definitions YAML.

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/engine"
 
-	_ "github.com/ppeble/go-holidays/internal/definitions"
+	_ "github.com/holidays/go-holidays/internal/definitions"
 )
 
 // nextHolidaysMaxForwardYears bounds the forward scan in NextHolidays so a

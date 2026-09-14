@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/engine"
 )
 
 var (

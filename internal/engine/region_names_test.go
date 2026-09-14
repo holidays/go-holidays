@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/engine"
 )
 
 var _ = Describe("RegisterRegionNames / RegionName / RegionNames", func() {

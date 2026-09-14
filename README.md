@@ -13,7 +13,7 @@ for details on how holidays are classified.
 ## Installation
 
 ```bash
-go get github.com/ppeble/go-holidays
+go get github.com/holidays/go-holidays
 ```
 
 ## Tested versions
@@ -36,7 +36,7 @@ the oldest matrix entry are expected to work but are not exercised by CI.
 
 This module follows [semantic versioning](http://semver.org/). The guarantee
 specifically covers the exported surface of the root package
-`github.com/ppeble/go-holidays` (its functions, types, and their fields).
+`github.com/holidays/go-holidays` (its functions, types, and their fields).
 
 Please note that we consider definition changes to be "minor" bumps, meaning
 they are backwards compatible with your code but might give different holiday
@@ -57,7 +57,7 @@ rest for brevity:
 import (
 	"time"
 
-	holidays "github.com/ppeble/go-holidays"
+	holidays "github.com/holidays/go-holidays"
 )
 ```
 

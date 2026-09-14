@@ -38,7 +38,7 @@ GPG-signed commits are not required by this repository.
 Definitions live in a git submodule. Clone with:
 
 ```sh
-git clone --recurse-submodules https://github.com/ppeble/go-holidays
+git clone --recurse-submodules https://github.com/holidays/go-holidays
 ```
 
 or, in an existing clone:

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/definition"
 )
 
 // Resolved is the internal result of resolving a single rule for a single year.

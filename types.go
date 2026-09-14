@@ -3,7 +3,7 @@ package holidays
 import (
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/engine"
 )
 
 type Holiday struct {

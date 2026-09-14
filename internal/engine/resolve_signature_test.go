@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/ppeble/go-holidays/internal/definition"
+	"github.com/holidays/go-holidays/internal/definition"
 )
 
 // Regression coverage for go-holidays-67s: two definitions that share every
