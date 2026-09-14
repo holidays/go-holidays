@@ -10,6 +10,22 @@ import (
 	"github.com/ppeble/go-holidays/internal/engine"
 )
 
+var (
+	cacheMu         sync.RWMutex
+	cacheStore_data = map[cacheKey]cacheEntry{}
+)
+
+type cacheKey struct {
+	regions  string
+	informal bool
+	observed bool
+}
+
+type cacheEntry struct {
+	from, to time.Time
+	byDay    map[string][]Holiday
+}
+
 // CacheBetween pre-computes and stores every holiday in [from, to] for the given
 // options. Subsequent calls to On/Between with the same options and a range
 // fully contained in [from, to] will be answered from the cache.
@@ -30,22 +46,6 @@ func ResetCache() {
 	cacheStore_data = map[cacheKey]cacheEntry{}
 	cacheMu.Unlock()
 }
-
-type cacheKey struct {
-	regions  string
-	informal bool
-	observed bool
-}
-
-type cacheEntry struct {
-	from, to time.Time
-	byDay    map[string][]Holiday
-}
-
-var (
-	cacheMu         sync.RWMutex
-	cacheStore_data = map[cacheKey]cacheEntry{}
-)
 
 func optionsKey(opts Options) cacheKey {
 	rs := append([]string(nil), opts.Regions...)
