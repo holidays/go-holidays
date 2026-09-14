@@ -9,9 +9,10 @@ import (
 
 // Resolved is the internal result of resolving a single rule for a single year.
 type Resolved struct {
-	Date    time.Time
-	Name    string
-	Regions []string
+	Date     time.Time
+	Name     string
+	Regions  []string
+	Informal bool
 }
 
 // ResolveOptions controls filtering during resolution.
@@ -61,7 +62,7 @@ func ResolveYear(year int, opts ResolveOptions) ([]Resolved, error) {
 			continue
 		}
 		seen[key] = struct{}{}
-		out = append(out, Resolved{Date: date, Name: rule.Name, Regions: rule.Regions})
+		out = append(out, Resolved{Date: date, Name: rule.Name, Regions: rule.Regions, Informal: rule.Type == definition.Informal})
 	}
 	return out, nil
 }
