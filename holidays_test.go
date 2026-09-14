@@ -385,6 +385,26 @@ var _ = Describe("same-date distinct holidays for a wildcard region (go-holidays
 	})
 })
 
+var _ = Describe("Holiday.Informal (go-holidays-4lb.2)", func() {
+	It("distinguishes formal from informal US holidays over a full year", func() {
+		start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		end := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
+		hs, err := holidays.Between(start, end, holidays.Options{Regions: []string{"us"}, Informal: true})
+		Expect(err).NotTo(HaveOccurred())
+
+		hasInformal, hasFormal := false, false
+		for _, h := range hs {
+			if h.Informal {
+				hasInformal = true
+			} else {
+				hasFormal = true
+			}
+		}
+		Expect(hasInformal).To(BeTrue(), "expected at least one informal holiday in the [us] 2026 calendar, got %+v", hs)
+		Expect(hasFormal).To(BeTrue(), "expected at least one formal holiday in the [us] 2026 calendar, got %+v", hs)
+	})
+})
+
 var _ = Describe("region string normalization (go-holidays-9tl)", func() {
 	It("treats an uppercase region code the same as lowercase", func() {
 		date := time.Date(2026, 7, 4, 0, 0, 0, 0, time.UTC)
