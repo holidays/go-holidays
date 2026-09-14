@@ -11,6 +11,11 @@ import (
 	"github.com/ppeble/go-holidays/internal/generator"
 )
 
+type loadedFile struct {
+	key string
+	rf  *generator.RegionFile
+}
+
 // RegisterMethod registers a named method usable from a YAML rule's
 // `function:` or `observed:` field. Must be called before LoadCustom for any
 // custom YAML that references the name. Wraps engine.RegisterMethod.
@@ -61,11 +66,6 @@ func UnloadCustom(paths ...string) {
 		engine.UnregisterCountry("custom:" + base)
 	}
 	ResetCache()
-}
-
-type loadedFile struct {
-	key string
-	rf  *generator.RegionFile
 }
 
 // normalizeCustomRegionCodes lowercases and trims every region code on every
