@@ -3,7 +3,7 @@ package calc_test
 import (
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/calc"
+	"github.com/holidays/go-holidays/internal/calc"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

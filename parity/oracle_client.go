@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	holidays "github.com/ppeble/go-holidays"
+	holidays "github.com/holidays/go-holidays"
 )
 
 // pair is one normalized holiday: a UTC calendar date and a name. Both the Go

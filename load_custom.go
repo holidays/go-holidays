@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/engine"
-	"github.com/ppeble/go-holidays/internal/generator"
+	"github.com/holidays/go-holidays/internal/engine"
+	"github.com/holidays/go-holidays/internal/generator"
 )
 
 type loadedFile struct {

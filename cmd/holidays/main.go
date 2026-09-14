@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	holidays "github.com/ppeble/go-holidays"
+	holidays "github.com/holidays/go-holidays"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/calc"
+	"github.com/holidays/go-holidays/internal/calc"
 )
 
 func init() {

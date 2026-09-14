@@ -2,7 +2,7 @@
 
 ## Tech Stack
 
-- Go 1.24.4 (`go.mod` module `github.com/ppeble/go-holidays`)
+- Go 1.24.4 (`go.mod` module `github.com/holidays/go-holidays`)
 - Runtime dependency: `gopkg.in/yaml.v3 v3.0.1` (used only by the code generator).
   Test-only dependencies: `github.com/onsi/ginkgo/v2` + `github.com/onsi/gomega`
   (the required test framework, see Testing section).
@@ -28,7 +28,7 @@ definitions/*.yaml  →  internal/generator (parse → validate → emit)  →  
 
 **Run-time**: public API → engine → registered rules + methods
 ```
-holidays.go (public API at the module root: github.com/ppeble/go-holidays —
+holidays.go (public API at the module root: github.com/holidays/go-holidays —
              On/Between/YearHolidays/NextHolidays/..., plus a blank import of
              internal/definitions so every region registers itself)
   → internal/engine (ResolveYear: walk rules, filter by region/type/year, compute dates)
@@ -38,7 +38,7 @@ holidays.go (public API at the module root: github.com/ppeble/go-holidays —
 ```
 
 - **One import, no facade.** The public API lives at the module root
-  (`package holidays`, path `github.com/ppeble/go-holidays`) and holds the real
+  (`package holidays`, path `github.com/holidays/go-holidays`) and holds the real
   logic, not forwarders. Everything it depends on is under `internal/`, so the
   root package is the entire public surface. This mirrors the Ruby gem, where
   `lib/holidays.rb` holds the API and generated per-region data sits in

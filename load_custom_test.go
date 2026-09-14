@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	holidays "github.com/ppeble/go-holidays"
+	holidays "github.com/holidays/go-holidays"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

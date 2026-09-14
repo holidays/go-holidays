@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ppeble/go-holidays/internal/generator"
+	"github.com/holidays/go-holidays/internal/generator"
 )
 
 func main() {

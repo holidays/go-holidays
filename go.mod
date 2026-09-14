@@ -1,4 +1,4 @@
-module github.com/ppeble/go-holidays
+module github.com/holidays/go-holidays
 
 go 1.27.0
 

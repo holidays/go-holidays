@@ -3,7 +3,7 @@ package engine
 import (
 	"time"
 
-	"github.com/ppeble/go-holidays/internal/calc"
+	"github.com/holidays/go-holidays/internal/calc"
 )
 
 // The 15 well-known methods from holidays/definitions/METHODS.yml.
