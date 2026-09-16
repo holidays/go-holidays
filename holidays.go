@@ -16,6 +16,7 @@ import (
 // has collected `count` holidays or has scanned this many years past `from`.
 const nextHolidaysMaxForwardYears = 100
 
+// On returns every holiday matching the given options that falls on date.
 func On(date time.Time, opts Options) ([]Holiday, error) {
 	return Between(date, date, opts)
 }
@@ -59,14 +60,16 @@ func YearHolidays(year int, opts Options) ([]Holiday, error) {
 // of `from`'s year (for example New Year's Day observed on Dec 31).
 func YearHolidaysFrom(from time.Time, opts Options) ([]Holiday, error) {
 	opts.Regions = normalizeRegions(opts.Regions)
-	fromDay := startOfDay(from)
-	upper := time.Date(fromDay.Year(), 12, 31, 0, 0, 0, 0, fromDay.Location())
-	resolveOpts := engine.ResolveOptions{
-		Regions:  opts.Regions,
-		Informal: opts.Informal,
-		Observed: opts.Observed,
-	}
-	var out []Holiday
+	var (
+		fromDay     = startOfDay(from)
+		upper       = time.Date(fromDay.Year(), 12, 31, 0, 0, 0, 0, fromDay.Location())
+		resolveOpts = engine.ResolveOptions{
+			Regions:  opts.Regions,
+			Informal: opts.Informal,
+			Observed: opts.Observed,
+		}
+		out []Holiday
+	)
 	for i, year := range []int{fromDay.Year(), fromDay.Year() + 1} {
 		resolved, err := engine.ResolveYear(year, resolveOpts)
 		if err != nil {
@@ -100,14 +103,16 @@ func NextHolidays(from time.Time, count int, opts Options) ([]Holiday, error) {
 		return nil, fmt.Errorf("holidays.NextHolidays: count must be positive, got %d", count)
 	}
 	opts.Regions = normalizeRegions(opts.Regions)
-	fromDay := startOfDay(from)
-	resolveOpts := engine.ResolveOptions{
-		Regions:  opts.Regions,
-		Informal: opts.Informal,
-		Observed: opts.Observed,
-	}
-	var collected []Holiday
-	startYear := fromDay.Year()
+	var (
+		fromDay     = startOfDay(from)
+		resolveOpts = engine.ResolveOptions{
+			Regions:  opts.Regions,
+			Informal: opts.Informal,
+			Observed: opts.Observed,
+		}
+		collected []Holiday
+		startYear = fromDay.Year()
+	)
 	for offset := 0; offset <= nextHolidaysMaxForwardYears; offset++ {
 		resolved, err := engine.ResolveYear(startYear+offset, resolveOpts)
 		if err != nil {
@@ -136,10 +141,12 @@ func NextHolidays(from time.Time, count int, opts Options) ([]Holiday, error) {
 // during the Mon-Fri work week containing `date`. For a Saturday input, the
 // work week is the preceding Mon-Fri; for a Sunday input, the following.
 func AnyHolidaysDuringWorkWeek(date time.Time, opts Options) (bool, error) {
-	d := startOfDay(date)
-	wday := int(d.Weekday())
-	monday := d.AddDate(0, 0, -(wday - 1))
-	friday := d.AddDate(0, 0, 5-wday)
+	var (
+		d      = startOfDay(date)
+		wday   = int(d.Weekday())
+		monday = d.AddDate(0, 0, -(wday - 1))
+		friday = d.AddDate(0, 0, 5-wday)
+	)
 	hs, err := Between(monday, friday, opts)
 	if err != nil {
 		return false, err

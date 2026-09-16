@@ -6,6 +6,8 @@ import (
 	"github.com/holidays/go-holidays/internal/engine"
 )
 
+// Holiday is one resolved holiday occurrence: a date, its name, the regions it
+// applies to, and whether it is an informal observance.
 type Holiday struct {
 	Date    time.Time
 	Name    string

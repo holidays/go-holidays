@@ -31,9 +31,11 @@ type ResolveOptions struct {
 // differ on any of those fields (for example us Good Friday tagged informal vs
 // the untagged us-states/ca Good Friday) stay distinct.
 func ResolveYear(year int, opts ResolveOptions) ([]Resolved, error) {
-	rules := rulesFor(opts.Regions)
-	out := make([]Resolved, 0, len(rules))
-	seen := make(map[string]struct{}, len(rules))
+	var (
+		rules = rulesFor(opts.Regions)
+		out   = make([]Resolved, 0, len(rules))
+		seen  = make(map[string]struct{}, len(rules))
+	)
 	for _, rule := range rules {
 		if !rule.AppliesIn(year) {
 			continue

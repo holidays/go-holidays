@@ -95,7 +95,7 @@ type rawTest struct {
 }
 
 type rawTestGiven struct {
-	Date    yaml.Node `yaml:"date"`    // string or sequence of strings
+	Date    yaml.Node `yaml:"date"` // string or sequence of strings
 	Regions []string  `yaml:"regions"`
 	Options yaml.Node `yaml:"options"` // string or sequence of strings
 }
@@ -108,8 +108,10 @@ type rawTestExpect struct {
 
 // ParseRegionFile parses one definitions YAML.
 func ParseRegionFile(country string, data []byte) (*RegionFile, error) {
-	var root rawRoot
-	dec := yaml.NewDecoder(bytes.NewReader(data))
+	var (
+		root rawRoot
+		dec  = yaml.NewDecoder(bytes.NewReader(data))
+	)
 	dec.KnownFields(true)
 	if err := dec.Decode(&root); err != nil {
 		return nil, fmt.Errorf("parse %s.yaml: %w", country, err)
