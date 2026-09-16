@@ -4,7 +4,7 @@ BIN             := bin
 DEFS_REPO       := https://github.com/holidays/definitions.git
 DEFS_TAG        ?= v9.0.0
 
-.PHONY: build holidays gen-holidays vet staticcheck test cover parity generate update-definitions clean
+.PHONY: build holidays gen-holidays vet staticcheck test parity generate update-definitions clean
 
 build: holidays gen-holidays
 
@@ -41,12 +41,6 @@ test: vet
 	@go list -f '{{.Dir}}/.cover.profile' ./... \
 		| while read coverage ; do [ -f "$$coverage" ] && go tool cover -func "$$coverage" ; done \
 		| awk '$$3 !~ /^100/ { print; gaps++ } END { exit gaps }'
-
-# cover opens an HTML coverage report for one package's last `make test` run
-# (use PKG=<package dir relative to repo root>, e.g. `make cover PKG=internal/calc`
-# or `make cover PKG=.` for the root package).
-cover:
-	go tool cover -html="$(PKG)/.cover.profile"
 
 # parity runs the Ruby<->Go comparison suite (build-tagged, excluded from `test`).
 # Requires Ruby and the `holidays` gem installed, plus the `definitions/` submodule

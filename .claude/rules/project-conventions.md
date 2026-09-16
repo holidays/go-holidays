@@ -128,9 +128,7 @@ definitions/              git submodule: upstream YAML (DO NOT hand-edit), VERSI
   `make test` fails if any function (`go tool cover -func`'s per-function
   line, not just a package's overall average) is below 100%, or if a package
   has no test files at all (no profile gets written, which is treated as a
-  failure the same way a `go test` FAIL is). `make cover PKG=<pkg-dir>` opens
-  an HTML drill-down of one package's last profile (e.g.
-  `make cover PKG=internal/calc`).
+  failure the same way a `go test` FAIL is).
 
 ### Test taxonomy
 

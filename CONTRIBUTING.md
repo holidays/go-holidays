@@ -115,10 +115,8 @@ Every function in every package must be at 100% statement coverage, not just
 each package's overall average. `make test` writes a coverage profile per
 package to `<pkg-dir>/.cover.profile`, then checks every line of `go tool
 cover -func`'s output (one per function) for that package - it fails if any
-function is below 100%, or if a package has no test files at all. Drill into
-one package's report with `make cover PKG=<pkg-dir>` (e.g.
-`make cover PKG=internal/calc`), which opens an HTML view of its last
-`.cover.profile`. Ginkgo v2 and Gomega are the required test framework.
+function is below 100%, or if a package has no test files at all. Ginkgo v2
+and Gomega are the required test framework.
 Region tests under `internal/definitions` are generated table tests and must
 not be hand-edited; change the upstream YAML or the generator, then `make
 generate`.
@@ -159,7 +157,6 @@ See `parity/README.md` for the design.
 
 * `make build` - builds `bin/holidays` and `bin/gen-holidays`
 * `make test` - runs `go vet`, the full test suite, and a 100% per-function coverage gate
-* `make cover PKG=<pkg-dir>` - opens an HTML coverage report for one package's last `make test` run
 * `make vet` - runs `go vet ./...` only
 * `make staticcheck` - runs `staticcheck ./...` (installs it if missing)
 * `make generate` - regenerates `internal/definitions` from the YAML submodule
