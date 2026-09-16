@@ -225,6 +225,9 @@ func convertYearRange(rr rawYearRanges) (definition.YearRange, error) {
 	if count != 1 {
 		return definition.YearRange{}, fmt.Errorf("year_ranges must have exactly one of until/from/limited/between, got %d", count)
 	}
+	// The count != 1 guard above already ensures exactly one of these four
+	// fields is set, so the last case (Between) is reached via default rather
+	// than repeating the nil check on genuinely unreachable dead code.
 	switch {
 	case rr.Until != nil:
 		return definition.YearRange{Kind: definition.YearRangeUntil, Years: []int{*rr.Until}}, nil
@@ -232,21 +235,19 @@ func convertYearRange(rr rawYearRanges) (definition.YearRange, error) {
 		return definition.YearRange{Kind: definition.YearRangeFrom, Years: []int{*rr.From}}, nil
 	case rr.Limited != nil:
 		return definition.YearRange{Kind: definition.YearRangeLimited, Years: rr.Limited}, nil
-	case rr.Between != nil:
+	default:
 		return definition.YearRange{Kind: definition.YearRangeBetween, Years: []int{rr.Between.Start, rr.Between.End}}, nil
 	}
-	return definition.YearRange{}, fmt.Errorf("empty year_ranges")
 }
 
 // convertTest returns (spec, skip, err). If skip is true the caller should drop
 // this test entirely (e.g. its dates were all malformed in upstream YAML).
 func convertTest(country string, idx int, rt rawTest) (TestSpec, bool, error) {
+	// decodeDateNode never returns a nil error alongside an empty slice, so
+	// there is no separate empty check to make here.
 	dates, err := decodeDateNode(rt.Given.Date)
 	if err != nil {
 		return TestSpec{}, false, fmt.Errorf("given.date: %w", err)
-	}
-	if len(dates) == 0 {
-		return TestSpec{}, false, fmt.Errorf("given.date is empty")
 	}
 	valid, skipped := filterParseableDates(dates)
 	if len(skipped) > 0 {
