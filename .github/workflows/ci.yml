@@ -17,10 +17,10 @@ jobs:
       matrix:
         go: ["1.25", "1.26", "1.27"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
       - name: make test (go vet + go test ./... + 100% coverage gate)
@@ -30,12 +30,12 @@ jobs:
     name: parity (corpus + exhaustive sweep)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
       # Parity compares Go output against the Ruby gem, so the Go toolchain
       # version is not what is under test: pin the latest matrix entry only.
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.27"
       - uses: ruby/setup-ruby@v1
