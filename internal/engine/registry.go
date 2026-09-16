@@ -39,6 +39,9 @@ var (
 	// from scratch, which dominated Go-side sweep cost.
 	flatRulesCache []definition.HolidayRule
 	flatRulesValid bool
+
+	// afterInvalidRead is a test-only hook; see rulesFor.
+	afterInvalidRead func()
 )
 
 // RegisterMethod registers a named method. Panics if name is already registered.
@@ -163,6 +166,13 @@ func rulesFor(requested []string) []definition.HolidayRule {
 		return out
 	}
 	regionMu.RUnlock()
+
+	// Test-only seam: lets tests deterministically reproduce the race the
+	// double check below guards against (another goroutine rebuilding the
+	// cache between our read unlock and our write lock). Nil in production.
+	if afterInvalidRead != nil {
+		afterInvalidRead()
+	}
 
 	regionMu.Lock()
 	defer regionMu.Unlock()
