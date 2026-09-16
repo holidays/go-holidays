@@ -54,4 +54,20 @@ var _ = Describe("LoadSourceTag", func() {
 			Expect(SourceTag).To(Equal(previous))
 		})
 	})
+
+	Context("when VERSION.txt is blank", func() {
+		It("wraps the normalization error and leaves SourceTag untouched", func() {
+			dir := GinkgoT().TempDir()
+			Expect(os.WriteFile(filepath.Join(dir, "VERSION.txt"), []byte("  \n\t"), 0o644)).To(Succeed())
+
+			previous := SourceTag
+			DeferCleanup(func() { SourceTag = previous })
+
+			err := LoadSourceTag(dir)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("VERSION.txt"))
+			Expect(err.Error()).To(ContainSubstring("blank"))
+			Expect(SourceTag).To(Equal(previous))
+		})
+	})
 })
