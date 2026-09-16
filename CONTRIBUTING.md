@@ -80,7 +80,8 @@ Never hand-edit `definitions/*.yaml` (it is a submodule checkout) or
 
 * Fork this repository.
 * Make your changes. Run `make test` to execute the test suite (this also
-  enforces 100% statement coverage per package, so new code needs tests).
+  enforces 100% statement coverage on every function, so new code needs
+  tests).
 * Open a PR pointing back to `main`.
 
 ## Regenerating definitions
@@ -107,15 +108,20 @@ lacks a registered Go implementation.
 ## Testing
 
 ```sh
-make test          # go vet + go test ./... + 100% per-package coverage gate
+make test          # go vet + per-package tests + 100% per-function coverage gate
 ```
 
-Every package must be at 100% statement coverage (measured per-package via
-`go test -cover ./...`); `make test` fails if any package is below that,
-including a package with no test files at all. Ginkgo v2 and Gomega are the
-required test framework. Region tests under `internal/definitions` are
-generated table tests and must not be hand-edited; change the upstream YAML
-or the generator, then `make generate`.
+Every function in every package must be at 100% statement coverage, not just
+each package's overall average. `make test` writes a coverage profile per
+package to `<pkg-dir>/.cover.profile`, then checks every line of `go tool
+cover -func`'s output (one per function) for that package - it fails if any
+function is below 100%, or if a package has no test files at all. Drill into
+one package's report with `make cover PKG=<pkg-dir>` (e.g.
+`make cover PKG=internal/calc`), which opens an HTML view of its last
+`.cover.profile`. Ginkgo v2 and Gomega are the required test framework.
+Region tests under `internal/definitions` are generated table tests and must
+not be hand-edited; change the upstream YAML or the generator, then `make
+generate`.
 
 ### Test taxonomy
 
@@ -152,7 +158,8 @@ See `parity/README.md` for the design.
 ## Local development helpers
 
 * `make build` - builds `bin/holidays` and `bin/gen-holidays`
-* `make test` - runs `go vet`, the full test suite, and a 100% per-package coverage gate
+* `make test` - runs `go vet`, the full test suite, and a 100% per-function coverage gate
+* `make cover PKG=<pkg-dir>` - opens an HTML coverage report for one package's last `make test` run
 * `make vet` - runs `go vet ./...` only
 * `make staticcheck` - runs `staticcheck ./...` (installs it if missing)
 * `make generate` - regenerates `internal/definitions` from the YAML submodule
