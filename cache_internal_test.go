@@ -98,6 +98,24 @@ var _ = Describe("cache internals", func() {
 		Expect(ok).To(BeFalse(), "flipping observed should miss")
 	})
 
+	It("breaks a same-date tie by name ascending", func() {
+		from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+		to := time.Date(2026, 12, 31, 0, 0, 0, 0, time.UTC)
+		opts := Options{Regions: []string{"us"}}
+		sameDay := time.Date(2026, 7, 4, 0, 0, 0, 0, time.UTC)
+		sentinel := []Holiday{
+			{Date: sameDay, Name: "Zeta Day"},
+			{Date: sameDay, Name: "Alpha Day"},
+		}
+		cacheStore(from, to, opts, sentinel)
+
+		got, ok := cacheFind(from, to, opts)
+		Expect(ok).To(BeTrue())
+		Expect(got).To(HaveLen(2))
+		Expect(got[0].Name).To(Equal("Alpha Day"), "expected same-date entries sorted by name ascending")
+		Expect(got[1].Name).To(Equal("Zeta Day"))
+	})
+
 	It("computes an options key that is order-insensitive for regions", func() {
 		a := optionsKey(Options{Regions: []string{"us", "gb"}})
 		b := optionsKey(Options{Regions: []string{"gb", "us"}})
