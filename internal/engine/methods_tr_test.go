@@ -60,4 +60,14 @@ var _ = Describe("tr feast methods", func() {
 			Expect(call(ramadanFeast, 2018)).To(Equal(time.Date(2018, time.June, 15, 0, 0, 0, 0, time.UTC)))
 		})
 	})
+
+	Context("a year the arithmetic calendar's search window misses entirely (e.g. 1970-1973 for sacrifice_feast)", func() {
+		It("returns the zero time with no error, not a hard failure", func() {
+			for _, year := range []int{1970, 1971, 1972, 1973} {
+				got, err := sacrificeFeast(MethodArgs{Year: year})
+				Expect(err).NotTo(HaveOccurred(), "year %d", year)
+				Expect(got.IsZero()).To(BeTrue(), "expected zero time for year %d, got %v", year, got)
+			}
+		})
+	})
 })

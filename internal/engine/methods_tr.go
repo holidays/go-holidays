@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/holidays/go-holidays/internal/calc"
@@ -69,14 +68,21 @@ func init() {
 
 // trFeastDate returns the Gregorian date of the given Hijri month/day
 // occurrence in year, preferring a Diyanet-proclaimed override when one is
-// recorded.
+// recorded. If neither an override nor a calculated occurrence exists for
+// year (the arithmetic calendar's fixed +/-1-year search window can miss an
+// occurrence near its edges, e.g. 1970-1973 for Dhu al-Hijjah 10 - Ruby's
+// HijriDate#gregorian_year_occurrence has the same gap), it returns the zero
+// Time with a nil error: the same "no holiday this year" convention used by
+// even_year_election_day in methods_us.go, not a hard failure. Ruby's
+// CustomMethods::TR#feast likewise returns nil in this case and the gem
+// treats that as no holiday, not an error.
 func trFeastDate(method string, year, hijriMonth, hijriDay int) (time.Time, error) {
 	if d, ok := trDiyanetOverrides[trFeastKey{method, year}]; ok {
 		return d, nil
 	}
 	d, ok := calc.HijriYearOccurrence(year, hijriMonth, hijriDay)
 	if !ok {
-		return time.Time{}, fmt.Errorf("engine: %s: no hijri occurrence found for %d", method, year)
+		return time.Time{}, nil
 	}
 	return d, nil
 }
