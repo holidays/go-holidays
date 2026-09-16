@@ -14,10 +14,14 @@ import (
 	"github.com/holidays/go-holidays/internal/generator"
 )
 
+// osExit is os.Exit by default; tests swap it out so a failing run() can be
+// observed without terminating the test binary.
+var osExit = os.Exit
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, "gen-holidays:", err)
-		os.Exit(1)
+		osExit(1)
 	}
 }
 
@@ -87,10 +91,15 @@ func run(args []string) error {
 		}
 		testPath := filepath.Join(*outDir, country+"_test.go")
 		if len(rf.Tests) > 0 {
-			testSrc, err := generator.EmitTests(rf)
-			if err != nil {
-				return err
-			}
+			// EmitTests, unlike EmitDefinitions, never fails: every value it
+			// writes into the buffer (country name, table names, dates,
+			// region codes) passes through strconv.Quote before landing in
+			// the output, so it can only ever produce a valid Go string
+			// literal, never syntax invalid enough for go/format to reject.
+			// EmitDefinitions differs because it emits the country name as
+			// a raw Go identifier (var <country>Rules = ...), which is
+			// where invalid-identifier failures actually surface.
+			testSrc, _ := generator.EmitTests(rf)
 			if err := os.WriteFile(testPath, testSrc, 0o644); err != nil {
 				return err
 			}

@@ -354,6 +354,21 @@ var _ = Describe("selectInputFiles", func() {
 // --- main() ----------------------------------------------------------------
 
 var _ = Describe("main", func() {
+	var (
+		savedArgs []string
+		savedExit func(int)
+	)
+
+	BeforeEach(func() {
+		savedArgs = os.Args
+		savedExit = osExit
+	})
+
+	AfterEach(func() {
+		os.Args = savedArgs
+		osExit = savedExit
+	})
+
 	It("runs to completion without exiting when the delegated run succeeds", func() {
 		inDir := GinkgoT().TempDir()
 		outDir := GinkgoT().TempDir()
@@ -362,12 +377,25 @@ var _ = Describe("main", func() {
 			"xx.yaml":     xxWithTests,
 		})
 
-		origArgs := os.Args
-		DeferCleanup(func() { os.Args = origArgs })
 		os.Args = []string{"gen-holidays", "-in", inDir, "-out", outDir}
+		called := false
+		osExit = func(int) { called = true }
 
 		main()
 
 		Expect(filepath.Join(outDir, "xx.go")).To(BeAnExistingFile())
+		Expect(called).To(BeFalse())
+	})
+
+	It("prints the error and exits with status 1 when the run fails", func() {
+		os.Args = []string{"gen-holidays", "-in", filepath.Join(GinkgoT().TempDir(), "does-not-exist")}
+		var code int
+		called := false
+		osExit = func(c int) { called = true; code = c }
+
+		main()
+
+		Expect(called).To(BeTrue())
+		Expect(code).To(Equal(1))
 	})
 })
