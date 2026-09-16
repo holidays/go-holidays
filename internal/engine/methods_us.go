@@ -120,4 +120,34 @@ func init() {
 			return a.Date, nil
 		}
 	})
+
+	// Independence Day observed shift, which varies by region:
+	//   - us_ri: Rhode Island moves to the following Monday on a weekend
+	//     (Saturday -> +2, Sunday -> +1).
+	//   - us_tx: Texas does not shift, the date is returned unchanged.
+	//   - everyone else: nearest weekday, same as to_weekday_if_weekend
+	//     (Saturday -> Friday, Sunday -> Monday).
+	RegisterMethod("independence_day", func(a MethodArgs) (time.Time, error) {
+		if a.Region == "us_ri" {
+			switch a.Date.Weekday() {
+			case time.Saturday:
+				return a.Date.AddDate(0, 0, 2), nil
+			case time.Sunday:
+				return a.Date.AddDate(0, 0, 1), nil
+			default:
+				return a.Date, nil
+			}
+		}
+		if a.Region == "us_tx" {
+			return a.Date, nil
+		}
+		switch a.Date.Weekday() {
+		case time.Saturday:
+			return a.Date.AddDate(0, 0, -1), nil
+		case time.Sunday:
+			return a.Date.AddDate(0, 0, 1), nil
+		default:
+			return a.Date, nil
+		}
+	})
 }
