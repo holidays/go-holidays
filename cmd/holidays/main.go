@@ -24,10 +24,14 @@ import (
 	holidays "github.com/holidays/go-holidays"
 )
 
+// osExit is os.Exit by default; tests swap it out so a failing run() can be
+// observed without terminating the test binary.
+var osExit = os.Exit
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, "holidays:", err)
-		os.Exit(1)
+		osExit(1)
 	}
 }
 
