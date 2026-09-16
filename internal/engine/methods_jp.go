@@ -136,8 +136,10 @@ var autumnEquinoxBase = equinoxBase{ranges: []struct {
 }}
 
 func jpEquinox(year int, month time.Month, eb equinoxBase) (time.Time, error) {
-	var base float64
-	found := false
+	var (
+		base  float64
+		found bool
+	)
 	for _, r := range eb.ranges {
 		if year >= r.lo && year <= r.hi {
 			base = r.base

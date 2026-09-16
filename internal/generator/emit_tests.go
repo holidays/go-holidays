@@ -81,8 +81,10 @@ func hasNamed(hs []holidays.Holiday, name string) bool {
 // Entry per date. The three expectation cases (named holiday, no holiday,
 // any holiday) mirror the semantics of the previous func-based tests.
 func writeDescribeTable(buf *bytes.Buffer, country string, idx int, ts TestSpec) {
-	hint := testHint(ts)
-	tableName := fmt.Sprintf("%03d_%s", idx, hint)
+	var (
+		hint      = testHint(ts)
+		tableName = fmt.Sprintf("%03d_%s", idx, hint)
+	)
 	fmt.Fprintf(buf, "\tDescribeTable(%s, func(s string) {\n", strconv.Quote(tableName))
 	fmt.Fprintf(buf, "\t\topts := holidays.Options{Regions: %s", stringSliceLit(ts.Regions))
 	for _, o := range ts.Options {
@@ -126,8 +128,10 @@ func testHint(ts TestSpec) string {
 
 // sanitizeIdent makes a Go-safe identifier fragment from arbitrary text.
 func sanitizeIdent(s string) string {
-	var b strings.Builder
-	upper := true
+	var (
+		b     strings.Builder
+		upper = true
+	)
 	for _, r := range s {
 		switch {
 		case unicode.IsLetter(r) || unicode.IsDigit(r):
