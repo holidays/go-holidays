@@ -31,6 +31,21 @@ var _ = Describe("HijriYearOccurrence", func() {
 		Entry("2031", 2031, 4, 3),
 		Entry("2032", 2032, 3, 22),
 	)
+
+	// Roughly once every 33 years a fixed Hijri date drifts across a
+	// Gregorian year boundary fast enough that the function's +/-1-year
+	// search window misses it entirely; 1970-1973 is one such gap for Dhu
+	// al-Hijjah 10 (see the trFeastDate comment in methods_tr.go).
+	DescribeTable("reports no occurrence when the search window misses the date",
+		func(gregorianYear int) {
+			_, ok := calc.HijriYearOccurrence(gregorianYear, 12, 10)
+			Expect(ok).To(BeFalse())
+		},
+		Entry("1970", 1970),
+		Entry("1971", 1971),
+		Entry("1972", 1972),
+		Entry("1973", 1973),
+	)
 })
 
 var _ = Describe("HijriToGregorian", func() {
