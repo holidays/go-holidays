@@ -17,21 +17,25 @@ Please read our [AI Usage Policy](AI_POLICY.md) before contributing.
 
 ## Commit requirements
 
-All commits must include a `Signed-off-by` trailer (the
-[Developer Certificate of Origin](https://developercertificate.org/)). Use
-`git commit -s`:
+All commits must be GPG-signed and include a `Signed-off-by` trailer. Use both
+the `-S` and `-s` flags together:
 
 ```sh
-git commit -s -m "Your commit message"
+git commit -S -s -m "Your commit message"
 ```
 
-This appends the following to your commit message automatically:
+**GPG signing** (`-S`) verifies that the commit genuinely came from you. If you
+haven't set up GPG signing with Git yet, GitHub has a guide:
+https://docs.github.com/en/authentication/managing-commit-signature-verification
+
+**Signed-off-by** (`-s`) is your acknowledgment of the
+[Developer Certificate of Origin](https://developercertificate.org/), certifying
+that you have the right to submit the contribution under this project's license.
+It appends the following to your commit message automatically:
 
 ```
 Signed-off-by: Your Name <your@email.com>
 ```
-
-GPG-signed commits are not required by this repository.
 
 ## General note on the definitions submodule
 
