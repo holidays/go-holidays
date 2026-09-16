@@ -119,8 +119,16 @@ definitions/              git submodule: upstream YAML (DO NOT hand-edit), VERSI
 - Test naming: Ginkgo spec descriptions replace the old `TestUS_000_ShroveTuesday` /
   `TestXxx_Scenario` Go func-name convention; describe behavior in plain English
   inside `Describe`/`It` blocks instead.
-- Always run via `make test` (runs `go vet` first, then `go test ./...` which
-  runs the Ginkgo suites).
+- Always run via `make test` (runs `go vet` first, then runs each package's
+  tests one at a time via `go test -coverprofile <pkg-dir>/.cover.profile
+  <pkg>`, driven by `go list -f`, then requires every individual function in
+  every package - via `go tool cover -func` on each profile, not just the
+  package aggregate - to be at 100% coverage).
+- **Every function in every package must be at 100% statement coverage.**
+  `make test` fails if any function (`go tool cover -func`'s per-function
+  line, not just a package's overall average) is below 100%, or if a package
+  has no test files at all (no profile gets written, which is treated as a
+  failure the same way a `go test` FAIL is).
 
 ### Test taxonomy
 
