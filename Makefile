@@ -22,8 +22,7 @@ staticcheck:
 	@command -v staticcheck >/dev/null 2>&1 || $(GO) install honnef.co/go/tools/cmd/staticcheck@latest
 	$(GOPATH)/bin/staticcheck ./...
 
-test: vet
-	$(GO) test ./...
+test: vet coverage-check
 
 # coverage-check enforces COVERAGE_MIN% statement coverage on every package
 # under `go list ./...` (parity/ is excluded automatically: it's gated behind

@@ -23,10 +23,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-      - name: make test (go vet + go test ./...)
+      - name: make test (go vet + go test ./... + 100% coverage gate)
         run: make test
-      - name: make coverage-check (100% statement coverage per package)
-        run: make coverage-check
 
   parity:
     name: parity (corpus + exhaustive sweep)

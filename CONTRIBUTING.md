@@ -79,7 +79,8 @@ Never hand-edit `definitions/*.yaml` (it is a submodule checkout) or
 ## For non-definition functionality
 
 * Fork this repository.
-* Make your changes. Run `make test` to execute the test suite.
+* Make your changes. Run `make test` to execute the test suite (this also
+  enforces 100% statement coverage per package, so new code needs tests).
 * Open a PR pointing back to `main`.
 
 ## Regenerating definitions
@@ -106,12 +107,15 @@ lacks a registered Go implementation.
 ## Testing
 
 ```sh
-make test          # go vet + go test ./...
+make test          # go vet + go test ./... + 100% per-package coverage gate
 ```
 
-Ginkgo v2 and Gomega are the required test framework. Region tests under
-`internal/definitions` are generated table tests and must not be hand-edited;
-change the upstream YAML or the generator, then `make generate`.
+Every package must be at 100% statement coverage (measured per-package via
+`go test -cover ./...`); `make test` fails if any package is below that,
+including a package with no test files at all. Ginkgo v2 and Gomega are the
+required test framework. Region tests under `internal/definitions` are
+generated table tests and must not be hand-edited; change the upstream YAML
+or the generator, then `make generate`.
 
 ### Test taxonomy
 
@@ -148,7 +152,7 @@ See `parity/README.md` for the design.
 ## Local development helpers
 
 * `make build` - builds `bin/holidays` and `bin/gen-holidays`
-* `make test` - runs `go vet` then the full test suite
+* `make test` - runs `go vet`, the full test suite, and a 100% per-package coverage gate
 * `make vet` - runs `go vet ./...` only
 * `make staticcheck` - runs `staticcheck ./...` (installs it if missing)
 * `make generate` - regenerates `internal/definitions` from the YAML submodule

@@ -120,7 +120,11 @@ definitions/              git submodule: upstream YAML (DO NOT hand-edit), VERSI
   `TestXxx_Scenario` Go func-name convention; describe behavior in plain English
   inside `Describe`/`It` blocks instead.
 - Always run via `make test` (runs `go vet` first, then `go test ./...` which
-  runs the Ginkgo suites).
+  runs the Ginkgo suites, then a gate requiring 100% statement coverage on
+  every package).
+- **Every package must be at 100% statement coverage.** `make test` fails if
+  any package (per `go test -cover ./...`) is below 100%, including a package
+  with no test files at all.
 
 ### Test taxonomy
 
