@@ -152,6 +152,60 @@ months:
 		Expect(holidays.LoadCustom("/nonexistent/path.yaml")).To(HaveOccurred())
 	})
 
+	It("errors when the filename has no basename to derive a registry key from", func() {
+		// filepath.Base(".yaml") is ".yaml" and its extension is also ".yaml", so
+		// trimming the extension leaves an empty registry key.
+		path := filepath.Join(GinkgoT().TempDir(), ".yaml")
+		Expect(os.WriteFile(path, []byte("months:\n  3:\n  - name: X\n    regions: [x]\n    mday: 1\n"), 0o644)).To(Succeed())
+		Expect(holidays.LoadCustom(path)).To(HaveOccurred())
+	})
+
+	It("errors for syntactically invalid YAML", func() {
+		path := writeYAML("malformed.yaml", `months: [this is not: valid: yaml: at: all`)
+		Expect(holidays.LoadCustom(path)).To(HaveOccurred())
+	})
+
+	It("errors for a rule referencing an unregistered observed method", func() {
+		path := writeYAML("bad_observed.yaml", `
+months:
+  3:
+  - name: Bad Observed
+    regions: [bad_observed_test]
+    mday: 1
+    observed: not_a_real_observed_method(date)
+`)
+		err := holidays.LoadCustom(path)
+		if err == nil {
+			holidays.UnloadCustom(path)
+		}
+		Expect(err).To(HaveOccurred())
+	})
+
+	It("accepts a file with a populated region_names block without error", func() {
+		// Exercises the region_names normalization path in
+		// normalizeCustomRegionCodes; region_names is parsed and normalized
+		// alongside the rules, but (like the generated pipeline's RegisterCountry
+		// call) LoadCustom does not yet feed it into the RegionName registry, so
+		// this only asserts the load succeeds and the rule itself still resolves
+		// under the normalized region code.
+		path := writeYAML("named_region.yaml", `
+region_names:
+  MyNamedTeam: My Named Team
+months:
+  3:
+  - name: Named Team Day
+    regions: [MyNamedTeam]
+    mday: 20
+`)
+		Expect(holidays.LoadCustom(path)).To(Succeed())
+		defer holidays.UnloadCustom(path)
+
+		d := time.Date(2026, 3, 20, 0, 0, 0, 0, time.UTC)
+		hs, err := holidays.On(d, holidays.Options{Regions: []string{"MyNamedTeam"}})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(hasNamedHoliday(hs, "Named Team Day")).To(BeTrue())
+	})
+
 	It("replaces a previous load with the same basename on reload", func() {
 		// Same basename, different contents: second load replaces first.
 		dir := GinkgoT().TempDir()
