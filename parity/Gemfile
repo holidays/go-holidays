@@ -5,4 +5,4 @@
 # "highest installed". oracle.rb activates this via bundler/setup.
 source "https://rubygems.org"
 
-gem "holidays", "11.5.0"
+gem "holidays", "11.6.0"
