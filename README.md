@@ -18,7 +18,7 @@ go get github.com/holidays/go-holidays
 
 ## Tested versions
 
-This module requires **Go 1.24+**, the floor declared by the `go` directive in
+This module requires **Go 1.25+**, the floor declared by the `go` directive in
 `go.mod`.
 
 CI runs the full test suite against the latest Go minor release and the
@@ -29,8 +29,9 @@ previous two:
   * 1.25
 
 That list lives in the `test-matrix` job in `.github/workflows/ci.yml` and moves
-forward as new Go minors are released. Versions between the declared floor and
-the oldest matrix entry are expected to work but are not exercised by CI.
+forward as new Go minors are released, with the floor in `go.mod` moving up in
+step so every matrix entry is actually exercised (rather than silently
+upgraded by `GOTOOLCHAIN=auto`).
 
 ## Semver
 
