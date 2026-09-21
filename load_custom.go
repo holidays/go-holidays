@@ -16,25 +16,49 @@ type loadedFile struct {
 	rf  *generator.RegionFile
 }
 
-// RegisterMethod registers a named method usable from a YAML rule's
-// `function:` or `observed:` field. Must be called before LoadCustom for any
-// custom YAML that references the name. Wraps engine.RegisterMethod.
+// RegisterMethod registers fn under name so a custom YAML rule can call it as
+// `function: name(...)` or `observed: name(...)`. Register every method a file
+// uses before calling LoadCustom on it.
+//
+// For a `function:` rule, fn returns the holiday's date for args.Year. Only the
+// month and day of the returned date are kept: the rule's `function_modifier:`
+// days are added first, then the year is forced to the year being resolved and
+// the location to UTC. Returning the zero time.Time means the holiday does not
+// occur that year.
+//
+// For an `observed:` rule, fn runs only when Options.Observed is true, and the
+// date it returns replaces the holiday's date.
+//
+// fn receives only a MethodArgs. Arguments written in the YAML call, as in
+// `my_method(year)`, must be syntactically valid but are not passed to fn.
+//
+// RegisterMethod panics if name is already registered, including any built-in
+// method name, and a registered method cannot be removed. Register each name
+// once, for example from an init function.
 func RegisterMethod(name string, fn func(args MethodArgs) (time.Time, error)) {
 	engine.RegisterMethod(name, engine.Method(fn))
 }
 
 // LoadCustom parses one or more holiday-definition YAML files (same schema as
 // upstream holidays/definitions) and registers their rules at runtime,
-// alongside the built-in rules. Each file's basename (sans extension) becomes
-// its registry key prefixed with "custom:", so re-loading the same path
-// replaces its prior load; distinct paths add rules without overwriting one
-// another.
+// alongside the built-in rules. Query them by the codes in each rule's
+// `regions:` list; like Options.Regions, those codes are lowercased and
+// trimmed.
 //
-// Any `function:` or `observed:` reference in user YAML must point to a method
-// already registered via RegisterMethod — we cannot interpret Ruby method
-// bodies. The YAML's `methods:` block is parsed but its Ruby source is ignored.
+// Each file is registered under its basename without the extension, prefixed
+// with "custom:". Only the basename matters: loading a path again replaces its
+// prior load, and so does loading a different path with the same basename
+// (/a/holidays.yaml and /b/holidays.yaml, or holidays.yaml and holidays.yml).
+// Files with different basenames add rules without overwriting one another.
 //
-// LoadCustom calls ResetCache when it succeeds, since the rule set changed.
+// The YAML's `methods:` block is parsed but its source is ignored. Every
+// `function:` or `observed:` reference must name a method already registered
+// via RegisterMethod, otherwise LoadCustom returns an error.
+//
+// LoadCustom is all-or-nothing: if any file cannot be read, parsed, or
+// validated, it returns an error and registers none of them. It also returns an
+// error when called with no paths. On success it calls ResetCache, since the
+// rule set changed.
 func LoadCustom(paths ...string) error {
 	if len(paths) == 0 {
 		return fmt.Errorf("holidays.LoadCustom: at least one path required")
@@ -47,7 +71,7 @@ func LoadCustom(paths ...string) error {
 		}
 		loaded = append(loaded, lf)
 	}
-	// All files parsed and validated — register them. We do the registration
+	// All files parsed and validated, so register them. We do the registration
 	// in a second pass so a failure in any file leaves the registry untouched.
 	for _, lf := range loaded {
 		engine.RegisterCountry("custom:"+lf.key, lf.rf.Rules)
@@ -57,9 +81,10 @@ func LoadCustom(paths ...string) error {
 }
 
 // UnloadCustom removes rules previously loaded by LoadCustom. The path is the
-// same one passed to LoadCustom; only the basename matters. Intended for tests
-// and long-running processes that need to drop reloadable rules. Calls
-// ResetCache when it succeeds.
+// same one passed to LoadCustom; only the basename matters, and a path that was
+// never loaded is ignored. Methods registered with RegisterMethod stay
+// registered. Intended for tests and long-running processes that need to drop
+// reloadable rules. Calls ResetCache when it succeeds.
 func UnloadCustom(paths ...string) {
 	for _, p := range paths {
 		base := strings.TrimSuffix(filepath.Base(p), filepath.Ext(p))
