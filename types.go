@@ -29,6 +29,18 @@ type Options struct {
 	Observed bool
 }
 
-// MethodArgs re-exports engine.MethodArgs so callers using RegisterMethod do
-// not need to import internal/engine.
+// MethodArgs is the input to a method passed to RegisterMethod. It re-exports
+// engine.MethodArgs so callers do not need to import internal/engine. Its
+// fields are Year, Month, Day (ints), Date (time.Time) and Region (string), and
+// what they hold depends on how the method is called.
+//
+// For a `function:` rule, Year is the year being resolved; Month and Day are
+// the rule's month and mday (Day is 0 when the rule uses wday instead); Date is
+// the date computed from the rule's month and its mday or wday/week, or the
+// zero time when the rule has neither; Region is the first region listed on
+// the rule.
+//
+// For an `observed:` rule, Date is the holiday's date and Year, Month and Day
+// are its parts; Region is the first region in Options.Regions, or "" when the
+// request named none.
 type MethodArgs = engine.MethodArgs

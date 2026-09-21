@@ -292,7 +292,18 @@ Flags may appear before or after the positional arguments.
 In addition to the [provided definitions](https://github.com/holidays/definitions)
 you can load a custom definitions file on the fly and use it immediately.
 
-To load a custom "Company Founding" holiday on June 1st:
+To load a custom "Company Founding" holiday on June 1st, put this in
+`custom_holidays.yaml`:
+
+```yaml
+months:
+  6:
+  - name: Company Founding
+    regions: [my_custom_region]
+    mday: 1
+```
+
+Then load it and query it by the region code from its `regions:` list:
 
 ```go
 err := holidays.LoadCustom("/home/user/holiday_definitions/custom_holidays.yaml")
@@ -302,6 +313,7 @@ hs, err := holidays.On(time.Date(2013, time.June, 1, 0, 0, 0, 0, time.UTC),
 ```
 
 Custom definition files must match the [syntax of the existing definition files](https://github.com/holidays/definitions/blob/master/doc/SYNTAX.md).
+Region codes are lowercased and trimmed, the same as `Options.Regions`.
 
 Multiple files can be loaded at the same time:
 
@@ -312,13 +324,22 @@ err := holidays.LoadCustom(
 )
 ```
 
-Loading the same path again replaces its prior load; loading distinct paths
-adds rules without overwriting one another. `UnloadCustom` removes rules
-previously loaded from the given paths.
+Each file is keyed by its base name without the directory or extension. Loading
+the same path again replaces its prior load, and so does loading any other file
+with the same base name (`/a/holidays.yaml` and `/b/holidays.yaml`, or
+`holidays.yaml` and `holidays.yml`), so give every file a distinct base name.
+Files with different base names add rules without overwriting one another.
+
+`LoadCustom` is all-or-nothing: if any file fails to read, parse, or validate,
+it returns an error and none of the files are registered. `UnloadCustom`
+removes rules previously loaded from the given paths, matched by base name.
+Both call `ResetCache` when they succeed, since the rule set changed.
+
+### Custom methods
 
 Custom rules can't embed executable logic in YAML: a rule's `function:` or
 `observed:` reference must point at a method already registered in Go before
-you call `LoadCustom`:
+you call `LoadCustom`, or `LoadCustom` returns an error:
 
 ```go
 holidays.RegisterMethod("my_method", func(a holidays.MethodArgs) (time.Time, error) {
@@ -327,8 +348,23 @@ holidays.RegisterMethod("my_method", func(a holidays.MethodArgs) (time.Time, err
 err := holidays.LoadCustom("my_team.yaml") // YAML can now use function: my_method(year)
 ```
 
-`LoadCustom` and `UnloadCustom` both call `ResetCache` when they succeed, since
-the rule set changed.
+The method receives only a `MethodArgs`. The parentheses in the YAML call are
+required, but any arguments inside them (the `year` above) are not passed to
+your function.
+
+- `function:` methods return the holiday's date for `a.Year`. Only the month and
+  day of the result are kept, after the rule's `function_modifier:` days are
+  added: the year is forced to the year being resolved and the time zone to UTC.
+  Returning the zero `time.Time` means the holiday does not occur that year.
+  `a.Month` and `a.Day` are the rule's month and mday, `a.Date` is the date
+  computed from them (or the rule's wday/week), and `a.Region` is the first
+  region listed on the rule.
+- `observed:` methods run only when `Options.Observed` is true. `a.Date` is the
+  holiday's date, `a.Region` is the first region in `Options.Regions` (empty if
+  none), and the date you return replaces the holiday's date.
+- `RegisterMethod` panics if the name is already registered, including any
+  built-in method name, and a registered method can't be removed. Register each
+  name once, for example from an `init` function.
 
 ## Caching holiday lookups
 
