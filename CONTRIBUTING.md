@@ -147,11 +147,8 @@ integration category, never e2e.
 
 ## Parity suite
 
-`parity/` compares this library's output against the Ruby gem pinned in
-`parity/Gemfile`, loading our own `definitions/` YAML into the gem so both
-sides resolve the same rules. It is run by the required "parity" CI check on
-every PR; do not run it locally, it needs Ruby and the pinned gem installed.
-See `parity/README.md` for the design.
+Parity checks against the Ruby gem live in https://github.com/holidays/parity.
+They do not gate PRs in this repo.
 
 ## Local development helpers
 
@@ -161,5 +158,4 @@ See `parity/README.md` for the design.
 * `make staticcheck` - runs `staticcheck ./...` (installs it if missing)
 * `make generate` - regenerates `internal/definitions` from the YAML submodule
 * `make update-definitions DEFS_TAG=vX.Y.Z` - checks the submodule out at a tag
-* `make parity` - runs the Ruby-vs-Go comparison suite (CI only, see above)
 * `make clean` - removes `bin/`

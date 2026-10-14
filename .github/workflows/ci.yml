@@ -25,27 +25,3 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: make test (go vet + go test ./... + 100% coverage gate)
         run: make test
-
-  parity:
-    name: parity (corpus + exhaustive sweep)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          submodules: true
-      # Parity compares Go output against the Ruby gem, so the Go toolchain
-      # version is not what is under test: pin the latest matrix entry only.
-      - uses: actions/setup-go@v7
-        with:
-          go-version: "1.27"
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: true
-          working-directory: parity
-      # Runs the curated corpus plus the full 1970-2050 exhaustive sweep against
-      # the holidays gem pinned by parity/Gemfile.lock. Blocking on every PR/push
-      # per project decision; the -timeout=20m (in the Makefile parity target)
-      # covers shared runners being slower than a local box.
-      - name: make parity (Ruby oracle vs Go, full sweep)
-        run: make parity

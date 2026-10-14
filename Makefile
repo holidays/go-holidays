@@ -4,7 +4,7 @@ BIN             := bin
 DEFS_REPO       := https://github.com/holidays/definitions.git
 DEFS_TAG        ?= v9.2.0
 
-.PHONY: build holidays gen-holidays vet staticcheck test parity generate update-definitions clean
+.PHONY: build holidays gen-holidays vet staticcheck test generate update-definitions clean
 
 build: holidays gen-holidays
 
@@ -28,9 +28,7 @@ staticcheck:
 # failures, or a package with no test files at all -- treated the same way,
 # by synthesizing a FAIL line when no profile got written); the second exits
 # non-zero on any function below 100% (coverage gaps). The two failure modes
-# are never conflated into one check. parity/ is excluded automatically:
-# every file in it is gated behind the `parity` build tag, so `go list ./...`
-# never lists it under the default build context.
+# are never conflated into one check.
 test: vet
 	@go list -f '{{.Dir}}/.cover.profile {{.ImportPath}}' ./... \
 		| while read coverage package ; do \
@@ -41,18 +39,6 @@ test: vet
 	@go list -f '{{.Dir}}/.cover.profile' ./... \
 		| while read coverage ; do [ -f "$$coverage" ] && go tool cover -func "$$coverage" ; done \
 		| awk '$$3 !~ /^100/ { print; gaps++ } END { exit gaps }'
-
-# parity runs the Ruby<->Go comparison suite (build-tagged, excluded from `test`).
-# Requires Ruby and the `holidays` gem installed, plus the `definitions/` submodule
-# checked out (the oracle loads our region YAML into the gem via load_custom).
-# See parity/README.md for the design and prerequisites.
-parity:
-	@ls definitions/*.yaml >/dev/null 2>&1 || { \
-		echo "error: definitions/ submodule is empty; the oracle would load no region YAML and every region would mismatch." >&2; \
-		echo "Run: git submodule update --init definitions" >&2; \
-		exit 1; \
-	}
-	$(GO) test -tags parity -v -timeout=20m ./parity/...
 
 generate: gen-holidays
 	$(BIN)/gen-holidays -in definitions -out internal/definitions
