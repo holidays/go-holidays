@@ -34,7 +34,20 @@ func init() {
 	})
 }
 
-// clWinterSolsticeBase is the June solstice constant, tuned to Chile time.
+// clWinterSolsticeBase lets solarTermDay find the date of the June (winter)
+// solstice in Chile.
+//
+// The 21.019 is the 1980 solstice expressed as a fractional day of June:
+// very early on June 21. solarTermDay starts from that point, adds about a
+// quarter day of drift per year, and subtracts a day for each leap year.
+//
+// The value is tied to Chilean local time, not UTC. The solstice can fall
+// late on June 20 in Chile while it is already June 21 in UTC (in 2029, for
+// example), and the holiday follows the Chilean date.
+//
+// The value comes from the upstream Ruby gem, where it was checked against
+// feriados.cl and published solstice tables. It is only valid for 2022 through
+// 2099; solarTermDay returns an error for any other year.
 var clWinterSolsticeBase = solarTermBase{ranges: []solarTermRange{
 	{2022, 2099, 21.019},
 }}
