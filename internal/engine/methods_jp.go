@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"fmt"
-	"math"
 	"time"
 
 	"github.com/holidays/go-holidays/internal/calc"
@@ -11,13 +9,13 @@ import (
 func init() {
 	// Vernal Equinox Day (春分の日): astronomical formula. Falls in March.
 	RegisterMethod("jp_vernal_equinox_day", func(a MethodArgs) (time.Time, error) {
-		return jpEquinox(a.Year, time.March, vernalEquinoxBase)
+		return solarTermDay(a.Year, time.March, vernalEquinoxBase)
 	})
 	// Autumn Equinox Day (秋分の日): formula identical shape, different base
 	// constants and falls in September. This method is named
 	// `jp_national_culture_day` for historical reasons.
 	RegisterMethod("jp_national_culture_day", func(a MethodArgs) (time.Time, error) {
-		return jpEquinox(a.Year, time.September, autumnEquinoxBase)
+		return solarTermDay(a.Year, time.September, autumnEquinoxBase)
 	})
 
 	RegisterMethod("jp_mountain_holiday", func(a MethodArgs) (time.Time, error) {
@@ -26,7 +24,7 @@ func init() {
 
 	// Citizens' Holiday: the day before Autumn Equinox if that equinox is a Wednesday.
 	RegisterMethod("jp_citizens_holiday", func(a MethodArgs) (time.Time, error) {
-		eq, err := jpEquinox(a.Year, time.September, autumnEquinoxBase)
+		eq, err := solarTermDay(a.Year, time.September, autumnEquinoxBase)
 		if err != nil {
 			return time.Time{}, err
 		}
@@ -60,11 +58,11 @@ func init() {
 		return time.Date(year, time.August, 11, 0, 0, 0, 0, time.UTC)
 	}))
 	RegisterMethod("jp_vernal_equinox_day_substitute", jpSubstituteWrapper(func(year int) time.Time {
-		d, _ := jpEquinox(year, time.March, vernalEquinoxBase)
+		d, _ := solarTermDay(year, time.March, vernalEquinoxBase)
 		return d
 	}))
 	RegisterMethod("jp_national_culture_day_substitute", jpSubstituteWrapper(func(year int) time.Time {
-		d, _ := jpEquinox(year, time.September, autumnEquinoxBase)
+		d, _ := solarTermDay(year, time.September, autumnEquinoxBase)
 		return d
 	}))
 }
@@ -108,49 +106,16 @@ func jpFixedHolidaysByMonth(year int) map[int]map[int]bool {
 }
 
 // Astronomical base constants, from jp.yaml.
-type equinoxBase struct {
-	ranges []struct {
-		lo, hi int
-		base   float64
-	}
-}
-
-var vernalEquinoxBase = equinoxBase{ranges: []struct {
-	lo, hi int
-	base   float64
-}{
+var vernalEquinoxBase = solarTermBase{ranges: []solarTermRange{
 	{1851, 1899, 19.8277},
 	{1900, 1979, 20.8357},
 	{1980, 2099, 20.8431},
 	{2100, 2150, 21.8510},
 }}
 
-var autumnEquinoxBase = equinoxBase{ranges: []struct {
-	lo, hi int
-	base   float64
-}{
+var autumnEquinoxBase = solarTermBase{ranges: []solarTermRange{
 	{1851, 1899, 22.2588},
 	{1900, 1979, 23.2588},
 	{1980, 2099, 23.2488},
 	{2100, 2150, 24.2488},
 }}
-
-func jpEquinox(year int, month time.Month, eb equinoxBase) (time.Time, error) {
-	var (
-		base  float64
-		found bool
-	)
-	for _, r := range eb.ranges {
-		if year >= r.lo && year <= r.hi {
-			base = r.base
-			found = true
-			break
-		}
-	}
-	if !found {
-		return time.Time{}, fmt.Errorf("jp equinox: year %d out of supported range", year)
-	}
-	diff := float64(year - 1980)
-	day := math.Floor(base + 0.242194*diff - math.Floor(diff/4))
-	return time.Date(year, month, int(day), 0, 0, 0, 0, time.UTC), nil
-}

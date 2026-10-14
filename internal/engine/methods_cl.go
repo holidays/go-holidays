@@ -24,7 +24,20 @@ func init() {
 		}
 		return d, nil
 	})
+	// Chile: Día Nacional de los Pueblos Indígenas falls on the winter
+	// solstice, except in 2021 when the law fixed it to June 21.
+	RegisterMethod("indigenous_peoples_day_cl", func(a MethodArgs) (time.Time, error) {
+		if a.Year == 2021 {
+			return time.Date(2021, time.June, 21, 0, 0, 0, 0, time.UTC), nil
+		}
+		return solarTermDay(a.Year, time.June, clWinterSolsticeBase)
+	})
 }
+
+// clWinterSolsticeBase is the June solstice constant, tuned to Chile time.
+var clWinterSolsticeBase = solarTermBase{ranges: []solarTermRange{
+	{2022, 2099, 21.019},
+}}
 
 func rollClNearestMonday(year int, month time.Month, day int) time.Time {
 	d := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)

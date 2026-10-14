@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// jpBadYear is a year outside jpEquinox's supported range (1851-2150), used
+// jpBadYear is a year outside the jp equinox supported range (1851-2150), used
 // to trigger a real library error (rather than a CLI-level parse error) from
 // holidays.On / YearHolidays / AnyHolidaysDuringWorkWeek when region "jp" is
 // requested.
@@ -197,7 +197,7 @@ var _ = Describe("cmdOn", func() {
 	It("surfaces a library error", func() {
 		err := cmdOn([]string{jpBadYear, "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
@@ -242,7 +242,7 @@ var _ = Describe("cmdYear", func() {
 	It("surfaces a library error", func() {
 		err := cmdYear([]string{"1800", "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
@@ -262,7 +262,7 @@ var _ = Describe("cmdWorkweek", func() {
 	It("surfaces a library error", func() {
 		err := cmdWorkweek([]string{jpBadYear, "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
