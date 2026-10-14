@@ -284,7 +284,14 @@ bin/holidays workweek 2024-11-25 --regions us
 bin/holidays regions
 ```
 
-Every subcommand except `regions` also accepts `--informal` and `--observed`.
+Every subcommand except `regions` also accepts `--informal`, `--observed` and
+`--custom`, a comma-separated list of [custom definition](#loading-custom-definitions-on-the-fly)
+files to load before the query:
+
+```bash
+bin/holidays on 2013-06-01 --regions my_custom_region --custom custom_holidays.yaml
+```
+
 Flags may appear before or after the positional arguments.
 
 ## Loading custom definitions on the fly

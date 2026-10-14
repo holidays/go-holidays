@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	holidays "github.com/holidays/go-holidays"
@@ -9,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// jpBadYear is a year outside jpEquinox's supported range (1851-2150), used
+// jpBadYear is a year outside the jp equinox supported range (1851-2150), used
 // to trigger a real library error (rather than a CLI-level parse error) from
 // holidays.On / YearHolidays / AnyHolidaysDuringWorkWeek when region "jp" is
 // requested.
@@ -196,7 +197,7 @@ var _ = Describe("cmdOn", func() {
 	It("surfaces a library error", func() {
 		err := cmdOn([]string{jpBadYear, "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
@@ -241,7 +242,7 @@ var _ = Describe("cmdYear", func() {
 	It("surfaces a library error", func() {
 		err := cmdYear([]string{"1800", "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
@@ -261,7 +262,7 @@ var _ = Describe("cmdWorkweek", func() {
 	It("surfaces a library error", func() {
 		err := cmdWorkweek([]string{jpBadYear, "--regions", "jp"})
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("jp equinox"))
+		Expect(err.Error()).To(ContainSubstring("out of supported range"))
 	})
 })
 
@@ -293,4 +294,63 @@ var _ = Describe("printHolidays", func() {
 		Expect(hs[0].Name).To(Equal("Alpha"))
 		Expect(hs[1].Name).To(Equal("Zeta"))
 	})
+})
+
+var _ = Describe("--custom", func() {
+	writeDefs := func(name, body string) string {
+		path := filepath.Join(GinkgoT().TempDir(), name)
+		Expect(os.WriteFile(path, []byte(body), 0o644)).To(Succeed())
+		return path
+	}
+
+	It("loads a custom definitions file before the query", func() {
+		path := writeDefs("clitest.yaml", `
+months:
+  6:
+  - name: Company Founding
+    regions: [clitest]
+    mday: 1
+`)
+		defer holidays.UnloadCustom(path)
+
+		Expect(cmdOn([]string{"2013-06-01", "--regions", "clitest", "--custom", path})).To(Succeed())
+		hs, err := holidays.On(time.Date(2013, time.June, 1, 0, 0, 0, 0, time.UTC),
+			holidays.Options{Regions: []string{"clitest"}})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(hs).To(HaveLen(1))
+		Expect(hs[0].Name).To(Equal("Company Founding"))
+	})
+
+	It("accepts the flag after the positional arguments and ignores blank list entries", func() {
+		path := writeDefs("clitest2.yaml", `
+months:
+  6:
+  - name: Company Founding
+    regions: [clitest2]
+    mday: 1
+`)
+		defer holidays.UnloadCustom(path)
+
+		Expect(cmdOn([]string{"2013-06-01", "--custom", path + ", ,", "--regions", "clitest2"})).To(Succeed())
+	})
+
+	It("reports a file that cannot be loaded", func() {
+		err := cmdOn([]string{"2013-06-01", "--custom", filepath.Join(GinkgoT().TempDir(), "missing.yaml")})
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(HavePrefix("custom: "))
+	})
+
+	DescribeTable("surfaces a load failure from every query subcommand",
+		func(cmd func([]string) error, args ...string) {
+			missing := filepath.Join(GinkgoT().TempDir(), "missing.yaml")
+			err := cmd(append(args, "--custom", missing))
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(HavePrefix("custom: "))
+		},
+		Entry("on", cmdOn, "2013-06-01"),
+		Entry("between", cmdBetween, "2013-06-01", "2013-06-02"),
+		Entry("year", cmdYear, "2013"),
+		Entry("next", cmdNext, "1", "2013-06-01"),
+		Entry("workweek", cmdWorkweek, "2013-06-01"),
+	)
 })

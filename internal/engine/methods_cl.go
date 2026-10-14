@@ -24,7 +24,33 @@ func init() {
 		}
 		return d, nil
 	})
+	// Chile: Día Nacional de los Pueblos Indígenas falls on the winter
+	// solstice, except in 2021 when the law fixed it to June 21.
+	RegisterMethod("indigenous_peoples_day_cl", func(a MethodArgs) (time.Time, error) {
+		if a.Year == 2021 {
+			return time.Date(2021, time.June, 21, 0, 0, 0, 0, time.UTC), nil
+		}
+		return solarTermDay(a.Year, time.June, clWinterSolsticeBase)
+	})
 }
+
+// clWinterSolsticeBase lets solarTermDay find the date of the June (winter)
+// solstice in Chile.
+//
+// The 21.019 is the 1980 solstice expressed as a fractional day of June:
+// very early on June 21. solarTermDay starts from that point, adds about a
+// quarter day of drift per year, and subtracts a day for each leap year.
+//
+// The value is tied to Chilean local time, not UTC. The solstice can fall
+// late on June 20 in Chile while it is already June 21 in UTC (in 2029, for
+// example), and the holiday follows the Chilean date.
+//
+// The value comes from the upstream Ruby gem, where it was checked against
+// feriados.cl and published solstice tables. It is only valid for 2022 through
+// 2099; solarTermDay returns an error for any other year.
+var clWinterSolsticeBase = solarTermBase{ranges: []solarTermRange{
+	{2022, 2099, 21.019},
+}}
 
 func rollClNearestMonday(year int, month time.Month, day int) time.Time {
 	d := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)

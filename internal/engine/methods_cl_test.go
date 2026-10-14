@@ -63,4 +63,33 @@ var _ = Describe("cl methods", func() {
 				To(Equal(time.Date(2016, 10, 31, 0, 0, 0, 0, time.UTC)))
 		})
 	})
+
+	Describe("indigenous_peoples_day_cl", func() {
+		It("uses the statutory date in 2021", func() {
+			Expect(call("indigenous_peoples_day_cl", MethodArgs{Year: 2021})).
+				To(Equal(time.Date(2021, 6, 21, 0, 0, 0, 0, time.UTC)))
+		})
+
+		DescribeTable("matches the winter solstice in Chile",
+			func(year, day int) {
+				Expect(call("indigenous_peoples_day_cl", MethodArgs{Year: year})).
+					To(Equal(time.Date(year, 6, day, 0, 0, 0, 0, time.UTC)))
+			},
+			Entry("2022", 2022, 21),
+			Entry("2024", 2024, 20),
+			Entry("2027", 2027, 21),
+			Entry("2028", 2028, 20),
+			// The 2029 solstice is 2029-06-21 01:48 UTC, still June 20 in Chile.
+			Entry("2029 (Chile time, not UTC)", 2029, 20),
+		)
+
+		It("errors outside the supported range", func() {
+			fn, ok := LookupMethod("indigenous_peoples_day_cl")
+			Expect(ok).To(BeTrue())
+			for _, year := range []int{2020, 2100} {
+				_, err := fn(MethodArgs{Year: year})
+				Expect(err).To(HaveOccurred(), "year %d", year)
+			}
+		})
+	})
 })

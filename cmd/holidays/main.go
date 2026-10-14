@@ -2,11 +2,11 @@
 //
 // Subcommands:
 //
-//	holidays on DATE         [--regions r1,r2] [--informal] [--observed]
-//	holidays between A B     [--regions r1,r2] [--informal] [--observed]
-//	holidays year YYYY       [--regions r1,r2] [--informal] [--observed]
-//	holidays next N FROM     [--regions r1,r2] [--informal] [--observed]
-//	holidays workweek DATE   [--regions r1,r2] [--informal] [--observed]
+//	holidays on DATE         [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+//	holidays between A B     [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+//	holidays year YYYY       [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+//	holidays next N FROM     [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+//	holidays workweek DATE   [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
 //	holidays regions
 //
 // Dates are YYYY-M-D (single- or double-digit month/day both accepted).
@@ -65,17 +65,17 @@ func run(args []string) error {
 
 func printUsage() {
 	fmt.Fprintln(os.Stderr, `usage:
-  holidays on DATE         [--regions r1,r2] [--informal] [--observed]
-  holidays between A B     [--regions r1,r2] [--informal] [--observed]
-  holidays year YYYY       [--regions r1,r2] [--informal] [--observed]
-  holidays next N FROM     [--regions r1,r2] [--informal] [--observed]
-  holidays workweek DATE   [--regions r1,r2] [--informal] [--observed]
+  holidays on DATE         [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+  holidays between A B     [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+  holidays year YYYY       [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+  holidays next N FROM     [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
+  holidays workweek DATE   [--regions r1,r2] [--informal] [--observed] [--custom f1,f2]
   holidays regions`)
 }
 
 func cmdOn(args []string) error {
 	fs := newFlags("on")
-	regions, informal, observed := bindCommonFlags(fs)
+	cf := bindCommonFlags(fs)
 	if err := parseLeading(fs, args, 1); err != nil {
 		return err
 	}
@@ -83,7 +83,11 @@ func cmdOn(args []string) error {
 	if err != nil {
 		return err
 	}
-	hs, err := holidays.On(d, optionsFrom(regions, informal, observed))
+	opts, err := cf.options()
+	if err != nil {
+		return err
+	}
+	hs, err := holidays.On(d, opts)
 	if err != nil {
 		return err
 	}
@@ -92,7 +96,7 @@ func cmdOn(args []string) error {
 
 func cmdBetween(args []string) error {
 	fs := newFlags("between")
-	regions, informal, observed := bindCommonFlags(fs)
+	cf := bindCommonFlags(fs)
 	if err := parseLeading(fs, args, 2); err != nil {
 		return err
 	}
@@ -104,7 +108,11 @@ func cmdBetween(args []string) error {
 	if err != nil {
 		return err
 	}
-	hs, err := holidays.Between(start, end, optionsFrom(regions, informal, observed))
+	opts, err := cf.options()
+	if err != nil {
+		return err
+	}
+	hs, err := holidays.Between(start, end, opts)
 	if err != nil {
 		return err
 	}
@@ -113,7 +121,7 @@ func cmdBetween(args []string) error {
 
 func cmdYear(args []string) error {
 	fs := newFlags("year")
-	regions, informal, observed := bindCommonFlags(fs)
+	cf := bindCommonFlags(fs)
 	if err := parseLeading(fs, args, 1); err != nil {
 		return err
 	}
@@ -121,7 +129,11 @@ func cmdYear(args []string) error {
 	if err != nil {
 		return fmt.Errorf("year: %w", err)
 	}
-	hs, err := holidays.YearHolidays(year, optionsFrom(regions, informal, observed))
+	opts, err := cf.options()
+	if err != nil {
+		return err
+	}
+	hs, err := holidays.YearHolidays(year, opts)
 	if err != nil {
 		return err
 	}
@@ -130,7 +142,7 @@ func cmdYear(args []string) error {
 
 func cmdNext(args []string) error {
 	fs := newFlags("next")
-	regions, informal, observed := bindCommonFlags(fs)
+	cf := bindCommonFlags(fs)
 	if err := parseLeading(fs, args, 2); err != nil {
 		return err
 	}
@@ -142,7 +154,11 @@ func cmdNext(args []string) error {
 	if err != nil {
 		return err
 	}
-	hs, err := holidays.NextHolidays(from, count, optionsFrom(regions, informal, observed))
+	opts, err := cf.options()
+	if err != nil {
+		return err
+	}
+	hs, err := holidays.NextHolidays(from, count, opts)
 	if err != nil {
 		return err
 	}
@@ -151,7 +167,7 @@ func cmdNext(args []string) error {
 
 func cmdWorkweek(args []string) error {
 	fs := newFlags("workweek")
-	regions, informal, observed := bindCommonFlags(fs)
+	cf := bindCommonFlags(fs)
 	if err := parseLeading(fs, args, 1); err != nil {
 		return err
 	}
@@ -159,7 +175,11 @@ func cmdWorkweek(args []string) error {
 	if err != nil {
 		return err
 	}
-	any, err := holidays.AnyHolidaysDuringWorkWeek(d, optionsFrom(regions, informal, observed))
+	opts, err := cf.options()
+	if err != nil {
+		return err
+	}
+	any, err := holidays.AnyHolidaysDuringWorkWeek(d, opts)
 	if err != nil {
 		return err
 	}
@@ -185,11 +205,36 @@ func newFlags(name string) *flag.FlagSet {
 	return flag.NewFlagSet(name, flag.ContinueOnError)
 }
 
-func bindCommonFlags(fs *flag.FlagSet) (*string, *bool, *bool) {
-	regions := fs.String("regions", "", "comma-separated region codes (empty == all)")
-	informal := fs.Bool("informal", false, "include informal holidays")
-	observed := fs.Bool("observed", false, "use observed dates")
-	return regions, informal, observed
+// commonFlags holds the flags shared by every subcommand that queries holidays.
+type commonFlags struct {
+	regions  *string
+	informal *bool
+	observed *bool
+	custom   *string
+}
+
+func bindCommonFlags(fs *flag.FlagSet) *commonFlags {
+	return &commonFlags{
+		regions:  fs.String("regions", "", "comma-separated region codes (empty == all)"),
+		informal: fs.Bool("informal", false, "include informal holidays"),
+		observed: fs.Bool("observed", false, "use observed dates"),
+		custom:   fs.String("custom", "", "comma-separated custom definition files to load first"),
+	}
+}
+
+// options loads any --custom definition files and returns the library options
+// described by the parsed flags.
+func (cf *commonFlags) options() (holidays.Options, error) {
+	if paths := splitList(*cf.custom); len(paths) > 0 {
+		if err := holidays.LoadCustom(paths...); err != nil {
+			return holidays.Options{}, fmt.Errorf("custom: %w", err)
+		}
+	}
+	return holidays.Options{
+		Regions:  splitList(*cf.regions),
+		Informal: *cf.informal,
+		Observed: *cf.observed,
+	}, nil
 }
 
 func parseLeading(fs *flag.FlagSet, args []string, n int) error {
@@ -252,16 +297,14 @@ func isNegativeInt(s string) bool {
 	return true
 }
 
-func optionsFrom(regions *string, informal, observed *bool) holidays.Options {
-	opts := holidays.Options{Informal: *informal, Observed: *observed}
-	if r := strings.TrimSpace(*regions); r != "" {
-		for _, s := range strings.Split(r, ",") {
-			if s = strings.TrimSpace(s); s != "" {
-				opts.Regions = append(opts.Regions, s)
-			}
+func splitList(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
 		}
 	}
-	return opts
+	return out
 }
 
 func parseDate(s string) (time.Time, error) {

@@ -43,7 +43,7 @@ var _ = Describe("jp methods", func() {
 			Expect(call("jp_citizens_holiday", MethodArgs{Year: 2016}).IsZero()).To(BeTrue())
 		})
 
-		It("propagates a jpEquinox error", func() {
+		It("propagates a solarTermDay error", func() {
 			fn, ok := LookupMethod("jp_citizens_holiday")
 			Expect(ok).To(BeTrue())
 			_, err := fn(MethodArgs{Year: 1700})
@@ -97,25 +97,9 @@ var _ = Describe("jp methods", func() {
 			Expect(got).To(Equal(time.Date(2018, 9, 24, 0, 0, 0, 0, time.UTC)))
 		})
 
-		It("jp_vernal_equinox_day_substitute returns zero when jpEquinox errors (base is zero)", func() {
+		It("jp_vernal_equinox_day_substitute returns zero when solarTermDay errors (base is zero)", func() {
 			Expect(call("jp_vernal_equinox_day_substitute", MethodArgs{Year: 1700}).IsZero()).To(BeTrue())
 		})
-	})
-})
-
-var _ = Describe("jpEquinox", func() {
-	It("errors for a year outside every supported base range", func() {
-		_, err := jpEquinox(1700, time.March, vernalEquinoxBase)
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("out of supported range"))
-	})
-
-	It("computes a date within each defined base range", func() {
-		for _, year := range []int{1860, 1920, 2000, 2120} {
-			got, err := jpEquinox(year, time.March, vernalEquinoxBase)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(got.Year()).To(Equal(year))
-		}
 	})
 })
 
