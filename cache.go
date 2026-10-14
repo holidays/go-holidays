@@ -1,12 +1,14 @@
 package holidays
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/holidays/go-holidays/internal/calc"
 	"github.com/holidays/go-holidays/internal/engine"
 )
 
@@ -114,13 +116,18 @@ func computeBetween(start, end time.Time, opts Options) ([]Holiday, error) {
 	// New Year's Day Jan 1 observed on the preceding Dec 31) lives in the
 	// following year's ResolveYear. The inRange clip keeps only in-window dates,
 	// and a given holiday instance appears in only one year's ResolveYear, so
-	// there is no duplication.
+	// there is no duplication. That look-ahead year may lie past the supported
+	// range (e.g. lunar year 2101) while the requested years do not; its
+	// dates are outside the window anyway, so it is skipped in that case.
 	for y := start.Year(); y <= end.Year()+1; y++ {
 		resolved, err := engine.ResolveYear(y, engine.ResolveOptions{
 			Regions:  opts.Regions,
 			Informal: opts.Informal,
 			Observed: opts.Observed,
 		})
+		if err != nil && y > end.Year() && errors.Is(err, calc.ErrUnsupportedYear) {
+			break
+		}
 		if err != nil {
 			return nil, err
 		}

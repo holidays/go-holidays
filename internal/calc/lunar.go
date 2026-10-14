@@ -1,8 +1,20 @@
 package calc
 
 import (
+	"errors"
 	"fmt"
 	"time"
+)
+
+// ErrUnsupportedYear is wrapped by errors for a year outside the range a
+// calculation's tables or formula support, e.g. a lunar year past the end of
+// the lunar tables. Test for it with errors.Is.
+var ErrUnsupportedYear = errors.New("year outside supported range")
+
+// firstLunarYear and lastLunarYear bound the lunar tables in lunar_data.go.
+const (
+	firstLunarYear = 1900
+	lastLunarYear  = 2100
 )
 
 // solarStartDate is the Gregorian date corresponding to lunar 1900-01-01
@@ -11,16 +23,18 @@ var solarStartDate = time.Date(1900, time.January, 31, 0, 0, 0, 0, time.UTC)
 
 // LunarToSolar converts a lunar calendar date (year/month/day in the region's
 // lunar calendar) to its Gregorian equivalent. The lookup tables cover cn, hk,
-// kr, sg, and vn from 1900 onward (cn, hk and sg share the Chinese table).
+// kr, sg, and vn for lunar years 1900..2100 (cn, hk and sg share the Chinese
+// table); other years return an error wrapping ErrUnsupportedYear.
 func LunarToSolar(year, month, day int, region string) (time.Time, error) {
 	info := calendarYearInfoForRegion(region)
 	if info == nil {
 		return time.Time{}, fmt.Errorf("calc.LunarToSolar: no lunar table for region %q", region)
 	}
-	yearDiff := year - 1900
-	if yearDiff < 0 || yearDiff >= len(info) {
-		return time.Time{}, fmt.Errorf("calc.LunarToSolar: year %d out of range for region %q", year, region)
+	if year < firstLunarYear || year > lastLunarYear {
+		return time.Time{}, fmt.Errorf("calc.LunarToSolar: lunar calendar data for %q covers lunar years %d..%d, got %d: %w",
+			region, firstLunarYear, lastLunarYear, year, ErrUnsupportedYear)
 	}
+	yearDiff := year - firstLunarYear
 	if month < 1 || month > 12 {
 		return time.Time{}, fmt.Errorf("calc.LunarToSolar: invalid lunar month %d", month)
 	}
