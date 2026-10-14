@@ -92,9 +92,9 @@ var _ = Describe("NextHolidays", func() {
 	})
 
 	It("propagates a resolution error from the engine", func() {
-		// kr's lunar tables end at 2049, so resolving 2050 as the very first
+		// kr's lunar tables end at 2100, so resolving 2101 as the very first
 		// forward-scan year (no tolerated look-ahead here) must error.
-		from := time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC)
+		from := time.Date(2101, 1, 1, 0, 0, 0, 0, time.UTC)
 		_, err := holidays.NextHolidays(from, 1, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).To(HaveOccurred())
 	})
@@ -145,10 +145,9 @@ var _ = Describe("AnyHolidaysDuringWorkWeek", func() {
 	})
 
 	It("propagates an error from the underlying Between call", func() {
-		// Any date in 2049 makes the underlying Between call resolve 2050 as its
-		// year+1 lookahead, which errors for kr (see the Between lunar-lookahead
-		// test above); AnyHolidaysDuringWorkWeek must surface that error.
-		d := time.Date(2049, 6, 15, 0, 0, 0, 0, time.UTC)
+		// kr's lunar tables end at 2100, so the underlying Between call errors
+		// for any date in 2101; AnyHolidaysDuringWorkWeek must surface that error.
+		d := time.Date(2101, 6, 15, 0, 0, 0, 0, time.UTC)
 		_, err := holidays.AnyHolidaysDuringWorkWeek(d, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).To(HaveOccurred())
 	})
@@ -219,9 +218,9 @@ var _ = Describe("CacheBetween", func() {
 		Expect(err).To(HaveOccurred(), "cache must not have been populated with a bad range")
 	})
 
-	It("propagates a resolution error from the engine's year+1 lookahead", func() {
-		from := time.Date(2049, 6, 1, 0, 0, 0, 0, time.UTC)
-		to := time.Date(2049, 6, 30, 0, 0, 0, 0, time.UTC)
+	It("propagates a resolution error from the engine", func() {
+		from := time.Date(2101, 6, 1, 0, 0, 0, 0, time.UTC)
+		to := time.Date(2101, 6, 30, 0, 0, 0, 0, time.UTC)
 		Expect(holidays.CacheBetween(from, to, holidays.Options{Regions: []string{"kr"}})).To(HaveOccurred())
 	})
 })
@@ -275,8 +274,8 @@ var _ = Describe("YearHolidaysFrom", func() {
 	It("propagates a primary-year resolution error, unlike the tolerated look-ahead failure", func() {
 		// Unlike the look-ahead year (fromDay.Year()+1), a failure resolving the
 		// primary year itself (i == 0) is not tolerated and must propagate. kr's
-		// lunar tables end at 2049, so starting from 2050 fails on the primary year.
-		from := time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC)
+		// lunar tables end at 2100, so starting from 2101 fails on the primary year.
+		from := time.Date(2101, 1, 1, 0, 0, 0, 0, time.UTC)
 		_, err := holidays.YearHolidaysFrom(from, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).To(HaveOccurred())
 	})
@@ -284,21 +283,21 @@ var _ = Describe("YearHolidaysFrom", func() {
 	It("tolerates a lunar look-ahead failure at the top of the lunar table range", func() {
 		// go-holidays-egm: a lunar region at the top of the lunar-table range must
 		// not fail its year query just because the year+1 look-ahead cannot
-		// resolve. kr's lunar tables end at 2049, so ResolveYear(2050) errors; but
-		// every 2050 result is clipped out of the [Jan 1, Dec 31 2049] window
-		// anyway, so YearHolidaysFrom for 2049 must succeed rather than
+		// resolve. kr's lunar tables end at 2100, so ResolveYear(2101) errors; but
+		// every 2101 result is clipped out of the [Jan 1, Dec 31 2100] window
+		// anyway, so YearHolidaysFrom for 2100 must succeed rather than
 		// propagating the look-ahead error.
 		//
 		// The assertion stays focused on egm: the call succeeds, clips to 2049,
 		// and yields both a lunar (설날) and a gregorian (크리스마스) holiday. It
 		// deliberately does NOT pin an exact count.
-		from := time.Date(2049, 1, 1, 0, 0, 0, 0, time.UTC)
+		from := time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
 		hs, err := holidays.YearHolidaysFrom(from, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(hasNamedHoliday(hs, "설날")).To(BeTrue())
 		Expect(hasNamedHoliday(hs, "크리스마스")).To(BeTrue())
 		for _, h := range hs {
-			Expect(h.Date.Year()).To(Equal(2049), "result outside 2049 window: %s %s", h.Date.Format("2006-01-02"), h.Name)
+			Expect(h.Date.Year()).To(Equal(2100), "result outside 2100 window: %s %s", h.Date.Format("2006-01-02"), h.Name)
 		}
 	})
 
@@ -353,9 +352,9 @@ var _ = Describe("YearHolidays", func() {
 	})
 
 	It("propagates a resolution error from the engine", func() {
-		// go-holidays-egm: kr's lunar tables end at 2049, so resolving 2050
+		// go-holidays-egm: kr's lunar tables end at 2100, so resolving 2101
 		// directly (not as a look-ahead) must surface the engine's error.
-		_, err := holidays.YearHolidays(2050, holidays.Options{Regions: []string{"kr"}})
+		_, err := holidays.YearHolidays(2101, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).To(HaveOccurred())
 	})
 })
@@ -368,13 +367,20 @@ var _ = Describe("Between", func() {
 		Expect(err).To(HaveOccurred())
 	})
 
-	It("propagates a resolution error from the engine's year+1 lookahead", func() {
+	It("skips a year+1 lookahead past the supported range", func() {
 		// computeBetween always resolves one year past end.Year() to catch a
-		// next-year observed date shifting back into range; for kr in 2049 that
-		// lookahead year (2050) is past the lunar table's range and errors, and
-		// unlike YearHolidaysFrom, Between has no fallback: the error propagates.
-		start := time.Date(2049, 6, 1, 0, 0, 0, 0, time.UTC)
-		end := time.Date(2049, 6, 30, 0, 0, 0, 0, time.UTC)
+		// next-year observed date shifting back into range; for kr in 2100 that
+		// lookahead year (2101) is past the lunar table's range. Its dates are
+		// outside the window anyway, so the query succeeds.
+		start := time.Date(2100, 6, 1, 0, 0, 0, 0, time.UTC)
+		end := time.Date(2100, 6, 30, 0, 0, 0, 0, time.UTC)
+		_, err := holidays.Between(start, end, holidays.Options{Regions: []string{"kr"}})
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("propagates a resolution error from a requested year", func() {
+		start := time.Date(2101, 6, 1, 0, 0, 0, 0, time.UTC)
+		end := time.Date(2101, 6, 30, 0, 0, 0, 0, time.UTC)
 		_, err := holidays.Between(start, end, holidays.Options{Regions: []string{"kr"}})
 		Expect(err).To(HaveOccurred())
 	})

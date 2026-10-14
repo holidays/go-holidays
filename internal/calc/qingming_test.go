@@ -1,6 +1,7 @@
 package calc_test
 
 import (
+	"errors"
 	"time"
 
 	"github.com/holidays/go-holidays/internal/calc"
@@ -31,14 +32,18 @@ var _ = Describe("Qingming", func() {
 		Entry("2024", 2024, 4),
 		Entry("2025", 2025, 4),
 		Entry("2026", 2026, 5),
+		Entry("2099", 2099, 4),
+		// The formula gives April 4 for 2100, but the sun reaches 15 degrees
+		// at 00:45 on April 5 2100, Beijing time (JPL DE440s).
+		Entry("2100", 2100, 5),
 	)
 
 	DescribeTable("rejects years outside the supported range",
 		func(year int) {
 			_, err := calc.Qingming(year)
-			Expect(err).To(HaveOccurred())
+			Expect(errors.Is(err, calc.ErrUnsupportedYear)).To(BeTrue())
 		},
 		Entry("before 1900", 1899),
-		Entry("after 2099", 2100),
+		Entry("after 2100", 2101),
 	)
 })

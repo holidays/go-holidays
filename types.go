@@ -3,8 +3,15 @@ package holidays
 import (
 	"time"
 
+	"github.com/holidays/go-holidays/internal/calc"
 	"github.com/holidays/go-holidays/internal/engine"
 )
+
+// ErrUnsupportedYear is wrapped by the error a lookup returns when it needs
+// data for a year outside the supported range, e.g. a lunar holiday past the
+// end of the lunar calendar tables (lunar years 1900..2100). Test for it with
+// errors.Is.
+var ErrUnsupportedYear = calc.ErrUnsupportedYear
 
 // Holiday is one resolved holiday occurrence: a date, its name, the regions it
 // applies to, and whether it is an informal observance.

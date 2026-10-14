@@ -1,6 +1,7 @@
 package calc_test
 
 import (
+	"errors"
 	"time"
 
 	"github.com/holidays/go-holidays/internal/calc"
@@ -31,9 +32,36 @@ var _ = Describe("LunarToSolar", func() {
 		Entry("vn Giỗ tổ Hùng Vương 2009 (Vietnamese table, UTC+7)", 2009, 3, 10, "vn", 2009, 4, 4),
 		Entry("kr lunar month 11 of 2042 (KASI new moon 23:29 KST)", 2042, 11, 1, "kr", 2042, 12, 12),
 		Entry("kr Seollal 2043 (unaffected by the 2042 row fix)", 2043, 1, 1, "kr", 2043, 2, 10),
-		// First and last rows of the lookup tables (1900 and 2049).
+		// Rows after 2049. Expected dates come from sources independent of
+		// the DE440 rows: the Hong Kong Observatory tables (cn, hk, sg), ICU's
+		// Korean calendar (kr) and Ho Ngoc Duc's algorithm at UTC+7 (vn).
+		Entry("cn Chinese New Year 2050 (HKO)", 2050, 1, 1, "cn", 2050, 1, 23),
+		Entry("hk Chung Yeung 2057 (HKO, new moon near midnight)", 2057, 9, 9, "hk", 2057, 10, 6),
+		Entry("cn Mid-Autumn 2075 (HKO)", 2075, 8, 15, "cn", 2075, 9, 24),
+		Entry("sg Dragon Boat 2099 (HKO)", 2099, 5, 5, "sg", 2099, 6, 23),
+		Entry("cn Mid-Autumn 2100 (HKO)", 2100, 8, 15, "cn", 2100, 9, 18),
+		Entry("kr Seollal 2050 (ICU)", 2050, 1, 1, "kr", 2050, 1, 23),
+		Entry("kr Chuseok 2075 (ICU)", 2075, 8, 15, "kr", 2075, 9, 24),
+		Entry("kr Buddha's Birthday 2100 (ICU)", 2100, 4, 8, "kr", 2100, 5, 16),
+		Entry("vn Tết 2072", 2072, 1, 1, "vn", 2072, 2, 19),
+		Entry("vn Giỗ tổ Hùng Vương 2085", 2085, 3, 10, "vn", 2085, 4, 3),
+		Entry("vn Giỗ tổ Hùng Vương 2100", 2100, 3, 10, "vn", 2100, 4, 18),
+		// First and last rows of the lookup tables (1900 and 2100).
 		Entry("earliest supported year (yearDiff == 0)", 1900, 1, 1, "cn", 1900, 1, 31),
-		Entry("latest supported year (yearDiff == len-1)", 2049, 1, 1, "cn", 2049, 2, 2),
+		Entry("latest supported year (yearDiff == len-1)", 2100, 1, 1, "cn", 2100, 2, 9),
+		Entry("last day of the latest supported year", 2100, 12, 29, "cn", 2101, 1, 28),
+	)
+
+	DescribeTable("returns ErrUnsupportedYear outside the tables",
+		func(year int, region, wantMessage string) {
+			_, err := calc.LunarToSolar(year, 1, 1, region)
+			Expect(errors.Is(err, calc.ErrUnsupportedYear)).To(BeTrue())
+			Expect(err.Error()).To(Equal(wantMessage))
+		},
+		Entry("year after the table ends", 2101, "kr",
+			`calc.LunarToSolar: lunar calendar data for "kr" covers lunar years 1900..2100, got 2101: year outside supported range`),
+		Entry("year before the table starts", 1899, "cn",
+			`calc.LunarToSolar: lunar calendar data for "cn" covers lunar years 1900..2100, got 1899: year outside supported range`),
 	)
 
 	DescribeTable("rejects unsupported inputs",
@@ -43,7 +71,7 @@ var _ = Describe("LunarToSolar", func() {
 		},
 		Entry("unknown region", 2020, 1, 1, "xx"),
 		Entry("year before the table starts", 1899, 1, 1, "cn"),
-		Entry("year after the table ends", 2050, 1, 1, "cn"),
+		Entry("year after the table ends", 2101, 1, 1, "cn"),
 		Entry("month too low", 2020, 0, 1, "cn"),
 		Entry("month too high", 2020, 13, 1, "cn"),
 	)
