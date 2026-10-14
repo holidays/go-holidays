@@ -1,8 +1,0 @@
-# frozen_string_literal: true
-
-# Pins the parity oracle to an exact holidays gem version so the reference
-# implementation is deterministic and never silently drifts to whatever is
-# "highest installed". oracle.rb activates this via bundler/setup.
-source "https://rubygems.org"
-
-gem "holidays", "11.7.0"
