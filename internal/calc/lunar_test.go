@@ -29,6 +29,8 @@ var _ = Describe("LunarToSolar", func() {
 		Entry("vn Tết 1985 (Vietnamese table, UTC+7)", 1985, 1, 1, "vn", 1985, 1, 21),
 		Entry("vn Tết 2007 (Vietnamese table, UTC+7)", 2007, 1, 1, "vn", 2007, 2, 17),
 		Entry("vn Giỗ tổ Hùng Vương 2009 (Vietnamese table, UTC+7)", 2009, 3, 10, "vn", 2009, 4, 4),
+		Entry("kr lunar month 11 of 2042 (KASI new moon 23:29 KST)", 2042, 11, 1, "kr", 2042, 12, 12),
+		Entry("kr Seollal 2043 (unaffected by the 2042 row fix)", 2043, 1, 1, "kr", 2043, 2, 10),
 		// First and last rows of the lookup tables (1900 and 2049).
 		Entry("earliest supported year (yearDiff == 0)", 1900, 1, 1, "cn", 1900, 1, 31),
 		Entry("latest supported year (yearDiff == len-1)", 2049, 1, 1, "cn", 2049, 2, 2),
