@@ -24,6 +24,11 @@ var _ = Describe("LunarToSolar", func() {
 		Entry("cn Chinese New Year 2025 (Chinese table, high year index)", 2025, 1, 1, "cn", 2025, 1, 29),
 		Entry("sg Lunar New Year 2019 (Chinese table, shared region alias)", 2019, 1, 1, "sg", 2019, 2, 5),
 		Entry("vn Giỗ tổ Hùng Vương 2017 (Vietnamese table, non-1st month)", 2017, 3, 10, "vn", 2017, 4, 6),
+		// Years where Vietnam (UTC+7) and Korea (UTC+9) disagree, which the
+		// old copy of the Korean table got wrong.
+		Entry("vn Tết 1985 (Vietnamese table, UTC+7)", 1985, 1, 1, "vn", 1985, 1, 21),
+		Entry("vn Tết 2007 (Vietnamese table, UTC+7)", 2007, 1, 1, "vn", 2007, 2, 17),
+		Entry("vn Giỗ tổ Hùng Vương 2009 (Vietnamese table, UTC+7)", 2009, 3, 10, "vn", 2009, 4, 4),
 		// First and last rows of the lookup tables (1900 and 2049).
 		Entry("earliest supported year (yearDiff == 0)", 1900, 1, 1, "cn", 1900, 1, 31),
 		Entry("latest supported year (yearDiff == len-1)", 2049, 1, 1, "cn", 2049, 2, 2),
