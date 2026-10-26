@@ -145,11 +145,6 @@ package it tests:
 A test with no dependency on real definition content belongs in the unit or
 integration category, never e2e.
 
-## Parity suite
-
-Parity checks against the Ruby gem live in https://github.com/holidays/parity.
-They do not gate PRs in this repo.
-
 ## Local development helpers
 
 * `make build` - builds `bin/holidays` and `bin/gen-holidays`
