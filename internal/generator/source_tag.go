@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 // versionFile is the file inside the definitions checkout that records the
 // upstream release the data came from.
 const versionFile = "VERSION.txt"
+
+// sourceTagFormat is what a normalized tag must look like. The tag is
+// written unquoted into a generated header comment, so a newline or other
+// stray text in VERSION.txt must not get through.
+var sourceTagFormat = regexp.MustCompile(`^v[0-9A-Za-z][0-9A-Za-z.+-]*$`)
 
 // SourceTag identifies the upstream version this code was generated from.
 // Embedded into the file header for traceability. It carries no default:
@@ -43,6 +49,9 @@ func NormalizeSourceTag(raw string) (string, error) {
 	}
 	if !strings.HasPrefix(tag, "v") {
 		tag = "v" + tag
+	}
+	if !sourceTagFormat.MatchString(tag) {
+		return "", fmt.Errorf("%s is not a version: %q", versionFile, tag)
 	}
 	return tag, nil
 }

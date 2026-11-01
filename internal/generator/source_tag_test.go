@@ -27,6 +27,13 @@ var _ = Describe("NormalizeSourceTag", func() {
 			Expect(err).To(HaveOccurred())
 		})
 	})
+
+	Context("when the contents are not a version", func() {
+		It("returns an error, since the tag is written into a generated comment", func() {
+			_, err := NormalizeSourceTag("9.0.0\nfunc init() {}")
+			Expect(err).To(MatchError(ContainSubstring(`not a version: "v9.0.0\nfunc init() {}"`)))
+		})
+	})
 })
 
 var _ = Describe("LoadSourceTag", func() {

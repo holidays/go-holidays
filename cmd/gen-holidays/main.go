@@ -92,10 +92,12 @@ func run(args []string) error {
 		testPath := filepath.Join(*outDir, country+"_test.go")
 		if len(rf.Tests) > 0 {
 			// EmitTests, unlike EmitDefinitions, never fails: every value it
-			// writes into the buffer (country name, table names, dates,
-			// region codes) passes through strconv.Quote before landing in
-			// the output, so it can only ever produce a valid Go string
-			// literal, never syntax invalid enough for go/format to reject.
+			// writes into the buffer (table names, dates, region codes) passes
+			// through strconv.Quote before landing in the output, and the
+			// country and source tag in its header comment were already
+			// format-checked by EmitDefinitions and LoadSourceTag above, so
+			// it can never produce syntax invalid enough for go/format to
+			// reject.
 			// EmitDefinitions differs because it emits the country name as
 			// a raw Go identifier (var <country>Rules = ...), which is
 			// where invalid-identifier failures actually surface.

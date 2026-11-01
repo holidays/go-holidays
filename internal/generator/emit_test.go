@@ -2,6 +2,8 @@ package generator
 
 import (
 	"bytes"
+	"regexp"
+	"strconv"
 
 	"github.com/holidays/go-holidays/internal/definition"
 
@@ -102,6 +104,36 @@ var _ = Describe("EmitDefinitions", func() {
 			Expect(out).To(ContainSubstring(`"Some Other Day"`))
 			Expect(out).To(ContainSubstring("var xxRules = []definition.HolidayRule{"))
 			Expect(out).To(ContainSubstring(`engine.RegisterCountry("xx", xxRules)`))
+		})
+	})
+
+	Context("when names and method strings contain Go syntax", func() {
+		It("emits every one as a plain string literal", func() {
+			hostile := "Day \"quoted\" \\ back\n`raw` }, {"
+			rf := &RegionFile{
+				Country: "xx",
+				Rules: []definition.HolidayRule{
+					{Name: hostile, Regions: []string{hostile}, Month: 1, Wday: -1, Function: hostile, Observed: hostile},
+				},
+				RegionNames: map[string]string{"xx": hostile},
+			}
+			src, err := EmitDefinitions(rf)
+			Expect(err).NotTo(HaveOccurred())
+			out := string(src)
+			literal := regexp.QuoteMeta(strconv.Quote(hostile))
+			Expect(out).To(MatchRegexp(`Name:\s+` + literal + `,`))
+			Expect(out).To(MatchRegexp(`Regions:\s+\[\]string\{` + literal + `\},`))
+			Expect(out).To(MatchRegexp(`Function:\s+` + literal + `,`))
+			Expect(out).To(MatchRegexp(`Observed:\s+` + literal + `,`))
+			Expect(out).To(MatchRegexp(`"xx":\s+` + literal + `,`))
+		})
+	})
+
+	Context("when the country is not a plain region code", func() {
+		It("returns an error, since the country becomes part of Go identifiers", func() {
+			src, err := EmitDefinitions(&RegionFile{Country: "xx\nvar y = 1"})
+			Expect(err).To(MatchError(`invalid country "xx\nvar y = 1": must only contain lowercase letters, digits and underscores`))
+			Expect(src).To(BeNil())
 		})
 	})
 
